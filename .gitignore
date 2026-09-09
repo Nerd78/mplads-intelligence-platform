@@ -22,3 +22,10 @@ backend/detection/model.joblib
 # OS / editor cruft
 .DS_Store
 Thumbs.db
+
+# Source datasets kept alongside the docs -- same reasoning as the block at the
+# top of this file: reproducible inputs, not documentation.
+/docs/*.csv
+/docs/*.pdf
+/docs/*.docx
+/docs/*.txt
