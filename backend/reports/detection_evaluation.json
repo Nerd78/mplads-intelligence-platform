@@ -1,0 +1,106 @@
+{
+  "model_version": "isoforest-v1",
+  "generated_at": "2026-09-09T21:26:23.871528+00:00",
+  "synthetic_count": 3958,
+  "real_count": 107567,
+  "synthetic_overall": {
+    "precision": 0.207,
+    "recall": 0.926,
+    "f1": 0.339
+  },
+  "synthetic_rows": [
+    {
+      "label": "AWARDED_TO_BLACKLISTED_CONTRACTOR",
+      "support": 185,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "label": "SANCTION_DELAY_EXCEEDS_90_DAYS",
+      "support": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "label": "EXCESS_PROJECT_DURATION_VS_NATIONAL_AVG",
+      "support": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "label": "COST_OVERRUN",
+      "support": 77,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "label": "PROGRESS_MISMATCH",
+      "support": 58,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "label": "DELAYED_WORK",
+      "support": 77,
+      "precision": 1.0,
+      "recall": 0.675,
+      "f1": 0.806
+    },
+    {
+      "label": "UNUSUAL_EXPENDITURE",
+      "support": 77,
+      "precision": 1.0,
+      "recall": 0.377,
+      "f1": 0.547
+    },
+    {
+      "label": "DUPLICATE_WORK",
+      "support": 154,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "label": "AGENCY_ANOMALY",
+      "support": 58,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "label": "GEOGRAPHIC_ANOMALY",
+      "support": 38,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  ],
+  "real_consistency_rows": [
+    {
+      "label": "SANCTION_DELAY_EXCEEDS_90_DAYS",
+      "support": 35045,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "label": "EXCESS_PROJECT_DURATION_VS_NATIONAL_AVG",
+      "support": 13626,
+      "precision": 1.0,
+      "recall": 0.985,
+      "f1": 0.992
+    },
+    {
+      "label": "AWARDED_TO_BLACKLISTED_CONTRACTOR",
+      "support": 5208,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  ]
+}
