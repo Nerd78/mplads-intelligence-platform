@@ -159,7 +159,7 @@ export function InvestigationDrawer({
                 <p className="font-medium text-foreground">{work.contractor_name ?? "Not recorded"}</p>
                 <p className="text-muted-foreground">{work.contractor_vendor_id ?? "—"}</p>
                 {work.is_contractor_blacklisted && (
-                  <p className="mt-1 flex items-center gap-1 text-risk-critical">
+                  <p className="mt-1 flex items-center gap-1 text-sev-critical">
                     <Ban className="h-3 w-3" /> Blacklisted{work.blacklisted_reason ? ` — ${work.blacklisted_reason}` : ""}
                   </p>
                 )}

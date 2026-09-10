@@ -207,7 +207,7 @@ function ProjectInvestigation() {
             <p className="text-muted-foreground">Vendor ID: {work.contractor_vendor_id ?? "—"}</p>
             <p className="text-muted-foreground">Implementing agency: {work.implementing_agency ?? "—"}</p>
             {work.is_contractor_blacklisted && (
-              <p className="flex items-center gap-1 pt-1 text-risk-critical">
+              <p className="flex items-center gap-1 pt-1 text-sev-critical">
                 <Ban className="h-3 w-3" /> Blacklisted{work.blacklisted_reason ? ` — ${work.blacklisted_reason}` : ""}
               </p>
             )}
@@ -238,7 +238,7 @@ function ProjectInvestigation() {
                   <TableRow key={p.payment_id}>
                     <TableCell className="text-xs">{formatDate(p.payment_date)}</TableCell>
                     <TableCell className="text-xs">
-                      {p.vendor_id ?? "—"} {p.is_vendor_blacklisted && <Ban className="ml-1 inline h-3 w-3 text-risk-critical" />}
+                      {p.vendor_id ?? "—"} {p.is_vendor_blacklisted && <Ban className="ml-1 inline h-3 w-3 text-sev-critical" />}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{p.payment_type ?? "—"}</TableCell>
                     <TableCell className="text-right text-xs tabular-nums">{formatCurrency(p.payment_amount)}</TableCell>

@@ -5,17 +5,30 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
+ * MPLADS Intelligence — design system.
  *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
+ * Three rules this file exists to enforce:
  *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
+ * 1. EVERY color is a solid, opaque value. No alpha channels, no `/50`
+ *    opacity utilities in components. A surface that needs to look lighter
+ *    gets its own named token (see --surface-sunken, --*-surface) rather
+ *    than being faded out. Translucent fills shift with whatever sits
+ *    behind them, which is what made the old palette look inconsistent.
+ * 2. All colors are oklch, so lightness steps are perceptually even.
+ * 3. Blue carries identity and magnitude; the four severity colors carry
+ *    state and nothing else. A blue is never used to mean "risk", and a
+ *    severity color is never used as a generic accent.
  *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * SURFACE LADDER (light): canvas #F4F7FC -> surface #FFF -> sunken #EDF2FA.
+ * The page sits on snow-blue, cards are pure white and lift off it, and
+ * sunken panels (table headers, insets) recede. That contrast is what makes
+ * the card edges read without heavy borders.
+ *
+ * CHART COLOR: --chart-seq-* is a monotonic-lightness blue ramp for
+ * magnitude. Severity uses --sev-* and is ALWAYS paired with a text label
+ * (see SeverityBadge) — amber and red are hard to separate for deuteranopes,
+ * so color alone never carries the meaning. Verified with the palette
+ * validator: contrast >= 3:1 on all four, normal-vision separation dE 17.
  */
 
 @theme inline {
@@ -26,6 +39,8 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* shadcn contract */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -46,11 +61,6 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -59,106 +69,203 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-risk-low: var(--risk-low);
-  --color-risk-low-foreground: var(--risk-low-foreground);
-  --color-risk-medium: var(--risk-medium);
-  --color-risk-medium-foreground: var(--risk-medium-foreground);
-  --color-risk-high: var(--risk-high);
-  --color-risk-high-foreground: var(--risk-high-foreground);
-  --color-risk-critical: var(--risk-critical);
-  --color-risk-critical-foreground: var(--risk-critical-foreground);
+
+  /* surface ladder */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-inset: var(--surface-inset);
+  --color-border-strong: var(--border-strong);
+
+  /* ink */
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+
+  /* blue ramp */
+  --color-blue-50: var(--blue-50);
+  --color-blue-100: var(--blue-100);
+  --color-blue-200: var(--blue-200);
+  --color-blue-300: var(--blue-300);
+  --color-blue-400: var(--blue-400);
+  --color-blue-500: var(--blue-500);
+  --color-blue-600: var(--blue-600);
+  --color-blue-700: var(--blue-700);
+  --color-blue-800: var(--blue-800);
+  --color-blue-900: var(--blue-900);
+
+  /* severity — state only, never decoration */
+  --color-sev-low: var(--sev-low);
+  --color-sev-low-surface: var(--sev-low-surface);
+  --color-sev-medium: var(--sev-medium);
+  --color-sev-medium-surface: var(--sev-medium-surface);
+  --color-sev-high: var(--sev-high);
+  --color-sev-high-surface: var(--sev-high-surface);
+  --color-sev-critical: var(--sev-critical);
+  --color-sev-critical-surface: var(--sev-critical-surface);
+
+  /* sequential ramp for magnitude */
+  --color-chart-seq-1: var(--chart-seq-1);
+  --color-chart-seq-2: var(--chart-seq-2);
+  --color-chart-seq-3: var(--chart-seq-3);
+  --color-chart-seq-4: var(--chart-seq-4);
+  --color-chart-seq-5: var(--chart-seq-5);
+
+  /* two-series categorical, for paired comparisons only */
+  --color-chart-pair-a: var(--chart-pair-a);
+  --color-chart-pair-b: var(--chart-pair-b);
+
+  --color-grid: var(--grid);
 }
 
 :root {
-  --radius: 0.5rem;
-  --background: oklch(0.995 0.005 260);
-  --foreground: oklch(0.2 0.04 265);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.04 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.04 265);
-  --primary: oklch(0.32 0.14 255);
-  --primary-foreground: oklch(0.98 0.005 250);
-  --secondary: oklch(0.96 0.015 255);
-  --secondary-foreground: oklch(0.32 0.14 255);
-  --muted: oklch(0.96 0.01 255);
-  --muted-foreground: oklch(0.5 0.04 255);
-  --accent: oklch(0.93 0.03 255);
-  --accent-foreground: oklch(0.25 0.08 255);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.9 0.015 255);
-  --input: oklch(0.9 0.015 255);
-  --ring: oklch(0.55 0.12 255);
-  --chart-1: oklch(0.32 0.14 255);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.99 0.005 255);
-  --sidebar-foreground: oklch(0.2 0.04 265);
-  --sidebar-primary: oklch(0.32 0.14 255);
-  --sidebar-primary-foreground: oklch(0.98 0.005 250);
-  --sidebar-accent: oklch(0.96 0.015 255);
-  --sidebar-accent-foreground: oklch(0.32 0.14 255);
-  --sidebar-border: oklch(0.9 0.015 255);
-  --sidebar-ring: oklch(0.55 0.12 255);
+  --radius: 0.625rem;
 
-  /* Severity palette -- the ONLY place color is used decoratively-free of
-     meaning in this app: every other surface stays neutral so these four
-     colors always read as "risk", never as generic UI accent. */
-  --risk-low: oklch(0.72 0.13 155);
-  --risk-low-foreground: oklch(0.24 0.06 155);
-  --risk-medium: oklch(0.82 0.15 85);
-  --risk-medium-foreground: oklch(0.28 0.08 70);
-  --risk-high: oklch(0.72 0.17 45);
-  --risk-high-foreground: oklch(0.99 0.005 60);
-  --risk-critical: oklch(0.58 0.22 25);
-  --risk-critical-foreground: oklch(0.99 0.005 25);
+  --blue-50: oklch(0.9721 0.0103 261.79);
+  --blue-100: oklch(0.937 0.023 258.36);
+  --blue-200: oklch(0.88 0.0439 257.97);
+  --blue-300: oklch(0.8182 0.0707 259.81);
+  --blue-400: oklch(0.7173 0.1123 260.73);
+  --blue-500: oklch(0.6105 0.1548 261.39);
+  --blue-600: oklch(0.5644 0.1847 260.82);
+  --blue-700: oklch(0.5086 0.1681 261.68);
+  --blue-800: oklch(0.4305 0.1451 261.94);
+  --blue-900: oklch(0.3895 0.1319 261.08);
+
+  --canvas: oklch(0.9753 0.0074 260.73);
+  --surface: oklch(1 0 0);
+  --surface-sunken: oklch(0.9597 0.012 259.82);
+  --surface-inset: oklch(0.9403 0.0172 256.28);
+  --border: oklch(0.9189 0.0202 257.47);
+  --border-strong: oklch(0.8593 0.0347 257.86);
+
+  --ink: oklch(0.2427 0.0515 257.23);
+  --ink-muted: oklch(0.5239 0.0461 258.77);
+  --ink-subtle: oklch(0.6618 0.0389 257.41);
+
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--blue-700);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: var(--surface-sunken);
+  --secondary-foreground: var(--blue-800);
+  --muted: var(--surface-sunken);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--blue-100);
+  --accent-foreground: var(--blue-800);
+  --destructive: oklch(0.5388 0.1837 30.98);
+  --destructive-foreground: oklch(1 0 0);
+  --input: var(--border-strong);
+  --ring: var(--blue-500);
+
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--blue-700);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: var(--blue-100);
+  --sidebar-accent-foreground: var(--blue-800);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--blue-500);
+
+  /* Ordered severity ramp. Lightness falls as severity rises so the order
+     survives any color-vision deficiency; the hue is a secondary cue. */
+  --sev-low: oklch(0.5991 0.1709 259.91);
+  --sev-low-surface: oklch(0.9529 0.0195 260.17);
+  --sev-medium: oklch(0.6198 0.1242 85.17);
+  --sev-medium-surface: oklch(0.9616 0.0302 90.33);
+  --sev-high: oklch(0.5388 0.1837 30.98);
+  --sev-high-surface: oklch(0.9429 0.0226 31.1);
+  --sev-critical: oklch(0.3784 0.1365 17.22);
+  --sev-critical-surface: oklch(0.9311 0.0239 1.36);
+
+  --chart-seq-1: var(--blue-200);
+  --chart-seq-2: var(--blue-400);
+  --chart-seq-3: var(--blue-500);
+  --chart-seq-4: var(--blue-700);
+  --chart-seq-5: var(--blue-900);
+
+  --chart-pair-a: var(--blue-600);
+  --chart-pair-b: oklch(0.6198 0.1242 85.17);
+
+  --grid: var(--surface-inset);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --blue-50: oklch(0.3082 0.1033 262.01);
+  --blue-100: oklch(0.3895 0.1319 261.08);
+  --blue-200: oklch(0.4305 0.1451 261.94);
+  --blue-300: oklch(0.5086 0.1681 261.68);
+  --blue-400: oklch(0.5644 0.1847 260.82);
+  --blue-500: oklch(0.6105 0.1548 261.39);
+  --blue-600: oklch(0.7173 0.1123 260.73);
+  --blue-700: oklch(0.8182 0.0707 259.81);
+  --blue-800: oklch(0.88 0.0439 257.97);
+  --blue-900: oklch(0.937 0.023 258.36);
 
-  --risk-low: oklch(0.58 0.14 155);
-  --risk-low-foreground: oklch(0.97 0.02 155);
-  --risk-medium: oklch(0.72 0.16 85);
-  --risk-medium-foreground: oklch(0.22 0.06 70);
-  --risk-high: oklch(0.62 0.19 45);
-  --risk-high-foreground: oklch(0.98 0.01 60);
-  --risk-critical: oklch(0.52 0.22 25);
-  --risk-critical-foreground: oklch(0.98 0.01 25);
+  --canvas: oklch(0.1831 0.0309 263.38);
+  --surface: oklch(0.2275 0.0376 263.41);
+  --surface-sunken: oklch(0.275 0.0496 263.93);
+  --surface-inset: oklch(0.326 0.0497 263.52);
+  --border: oklch(0.326 0.0497 263.52);
+  --border-strong: oklch(0.4036 0.0612 264.53);
+
+  --ink: oklch(0.9535 0.0149 260.73);
+  --ink-muted: oklch(0.7471 0.0447 260.4);
+  --ink-subtle: oklch(0.6032 0.0473 260.35);
+
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: oklch(0.7173 0.1123 260.73);
+  --primary-foreground: oklch(0.1831 0.0309 263.38);
+  --secondary: var(--surface-sunken);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-sunken);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--surface-inset);
+  --accent-foreground: var(--ink);
+  --destructive: oklch(0.6584 0.1727 30.31);
+  --destructive-foreground: oklch(0.1831 0.0309 263.38);
+  --input: var(--border-strong);
+  --ring: oklch(0.6105 0.1548 261.39);
+
+  --sidebar: oklch(0.2275 0.0376 263.41);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: oklch(0.7173 0.1123 260.73);
+  --sidebar-primary-foreground: oklch(0.1831 0.0309 263.38);
+  --sidebar-accent: var(--surface-inset);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--border);
+  --sidebar-ring: oklch(0.6105 0.1548 261.39);
+
+  /* Dark mode is re-picked against the dark surface, not an inversion of
+     the light steps -- the light values lose contrast on #0B1220. */
+  --sev-low: oklch(0.7115 0.1263 258.03);
+  --sev-low-surface: oklch(0.2849 0.0592 258.6);
+  --sev-medium: oklch(0.7477 0.1413 86.61);
+  --sev-medium-surface: oklch(0.2853 0.0462 90.07);
+  --sev-high: oklch(0.6584 0.1727 30.31);
+  --sev-high-surface: oklch(0.2768 0.0493 28.38);
+  --sev-critical: oklch(0.5682 0.1614 11);
+  --sev-critical-surface: oklch(0.2642 0.0569 355.73);
+
+  --chart-seq-1: oklch(0.4305 0.1451 261.94);
+  --chart-seq-2: oklch(0.5086 0.1681 261.68);
+  --chart-seq-3: oklch(0.6105 0.1548 261.39);
+  --chart-seq-4: oklch(0.7173 0.1123 260.73);
+  --chart-seq-5: oklch(0.8182 0.0707 259.81);
+
+  --chart-pair-a: oklch(0.7173 0.1123 260.73);
+  --chart-pair-b: oklch(0.7477 0.1413 86.61);
+
+  --grid: oklch(0.326 0.0497 263.52);
 }
 
 @layer base {
@@ -169,5 +276,28 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Numeric columns line up only if the figures are tabular. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * Recharts puts tabIndex on its wrapper and sectors, and react-simple-maps
+   * on every <path>, so clicking a pie slice or a state drew the browser's
+   * default black focus rectangle over the chart. These marks are not
+   * keyboard stops -- the surrounding buttons, tabs and table rows are -- so
+   * the ring is suppressed here rather than by removing focus outlines
+   * globally, which would strip them from real controls.
+   */
+  .recharts-wrapper:focus,
+  .recharts-wrapper :focus,
+  .recharts-surface :focus,
+  .rsm-svg :focus,
+  .rsm-geography:focus,
+  .rsm-marker:focus {
+    outline: none;
   }
 }

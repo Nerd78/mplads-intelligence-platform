@@ -9,7 +9,10 @@ export function SeverityBadge({ severity, className }: { severity: Severity | nu
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium tracking-tight",
+        // w-fit + justify-self-start: as a direct grid/flex child this badge
+        // would otherwise stretch across its whole track.
+        "inline-flex w-fit shrink-0 justify-self-start items-center gap-1.5 whitespace-nowrap",
+        "rounded-full border px-2 py-0.5 text-xs font-medium tracking-tight",
         riskColors[severity],
         className,
       )}

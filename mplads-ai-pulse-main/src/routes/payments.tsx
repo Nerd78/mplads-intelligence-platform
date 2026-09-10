@@ -74,7 +74,7 @@ function PaymentsPage() {
                     <TableCell className="max-w-[200px] truncate text-xs">{p.work_id}</TableCell>
                     <TableCell className="text-xs">
                       {p.vendor_id ?? "—"}
-                      {p.is_vendor_blacklisted && <Ban className="ml-1 inline h-3 w-3 text-risk-critical" />}
+                      {p.is_vendor_blacklisted && <Ban className="ml-1 inline h-3 w-3 text-sev-critical" />}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{p.payment_type ?? "—"}</TableCell>
                     <TableCell className="text-right text-xs tabular-nums">{formatCurrency(p.payment_amount)}</TableCell>

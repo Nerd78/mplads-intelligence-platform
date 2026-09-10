@@ -9,18 +9,21 @@ import type { DataSource, Severity } from "./api";
 
 export const SEVERITY_ORDER: Severity[] = ["Low", "Medium", "High", "Critical"];
 
+// Solid tint + solid ink, never an alpha fade of the severity color: a
+// translucent badge picks up whatever row striping sits behind it, which is
+// what made these read as four different colors depending on placement.
 export const riskColors: Record<Severity, string> = {
-  Low: "bg-risk-low/15 text-risk-low-foreground border-risk-low/30",
-  Medium: "bg-risk-medium/15 text-risk-medium-foreground border-risk-medium/30",
-  High: "bg-risk-high/15 text-risk-high-foreground border-risk-high/30",
-  Critical: "bg-risk-critical/15 text-risk-critical-foreground border-risk-critical/30",
+  Low: "bg-sev-low-surface text-sev-low border-sev-low",
+  Medium: "bg-sev-medium-surface text-sev-medium border-sev-medium",
+  High: "bg-sev-high-surface text-sev-high border-sev-high",
+  Critical: "bg-sev-critical-surface text-sev-critical border-sev-critical",
 };
 
 export const riskDotColors: Record<Severity, string> = {
-  Low: "bg-risk-low",
-  Medium: "bg-risk-medium",
-  High: "bg-risk-high",
-  Critical: "bg-risk-critical",
+  Low: "bg-sev-low",
+  Medium: "bg-sev-medium",
+  High: "bg-sev-high",
+  Critical: "bg-sev-critical",
 };
 
 // Kept in sync with backend/detection/scorer.py's severity_for_score --
@@ -34,14 +37,25 @@ export function getRiskLevelFromScore(score: number): Severity {
   return "Critical";
 }
 
+const CRORE = 10_000_000;
+const LAKH = 100_000;
+
+const inr = (n: number, digits: number) =>
+  new Intl.NumberFormat("en-IN", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
+
+/**
+ * Indian-unit currency. `Intl` compact notation is unusable here: it renders
+ * ₹1.26e11 as "₹13KCr" (thousand-crore), which nobody reads as money. Crore
+ * and lakh are spelled out instead, and the unit is always shown so a column
+ * mixing ₹2 Cr with ₹4.81 L can still be compared at a glance.
+ */
 export function formatCurrency(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-    notation: value >= 10_000_000 ? "compact" : "standard",
-  }).format(value);
+  if (value === 0) return "₹0";
+  const abs = Math.abs(value);
+  if (abs >= CRORE) return `₹${inr(value / CRORE, abs >= 100 * CRORE ? 0 : 2)} Cr`;
+  if (abs >= LAKH) return `₹${inr(value / LAKH, 2)} L`;
+  return `₹${inr(value, 0)}`;
 }
 
 export function formatNumber(value: number | null | undefined): string {
@@ -59,6 +73,38 @@ export function formatDate(value: string | null | undefined): string {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+/**
+ * Human-readable names for the detection engine's flag codes. The raw
+ * SCREAMING_SNAKE codes are 30+ characters and wrap onto three lines as chart
+ * axis labels, which is what made the anomaly chart unreadable.
+ */
+const ANOMALY_LABELS: Record<string, string> = {
+  SANCTION_DELAY_EXCEEDS_90_DAYS: "Sanction delay > 90 days",
+  EXCESS_PROJECT_DURATION_VS_NATIONAL_AVG: "Excess duration",
+  AWARDED_TO_BLACKLISTED_CONTRACTOR: "Blacklisted contractor",
+  DUPLICATE_WORK: "Duplicate work",
+  AGENCY_ANOMALY: "Agency anomaly",
+  PROGRESS_MISMATCH: "Progress mismatch",
+  COST_OVERRUN: "Cost overrun",
+  DELAYED_WORK: "Delayed work",
+  UNUSUAL_EXPENDITURE: "Unusual expenditure",
+  GEOGRAPHIC_ANOMALY: "Geographic anomaly",
+};
+
+export function formatAnomalyLabel(code: string): string {
+  const known = ANOMALY_LABELS[code];
+  if (known) return known;
+  const words = code.replaceAll("_", " ").toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/** Compact figures for chart axes and bar-end labels: 35045 -> "35k". */
+export function formatCompactNumber(value: number): string {
+  if (Math.abs(value) >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (Math.abs(value) >= 1_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, "")}k`;
+  return String(value);
 }
 
 export const DATA_SOURCE_LABEL: Record<DataSource, string> = {
