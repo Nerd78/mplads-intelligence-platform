@@ -156,6 +156,11 @@ export interface Alert extends WorkSummary {
 
 export type MapMetric = "overall" | "critical" | "cost_overrun" | "delayed" | "duplicate" | "contractor" | "progress_mismatch";
 
+export interface WorkCategory {
+  category: string;
+  work_count: number;
+}
+
 export interface GeoStateAgg {
   state: string;
   work_count: number;
@@ -296,6 +301,7 @@ export const api = {
   mps: (filters: MpsFilters = {}) => request<Page<Mp>>("/mps", filters),
   mp: (mpId: string) => request<MpProfile>(`/mps/${encodeURIComponent(mpId)}`),
   alerts: (filters: AlertsFilters = {}) => request<Page<Alert>>("/alerts", filters),
+  workCategories: () => request<WorkCategory[]>("/works/categories"),
   geoStates: (metric?: MapMetric) => request<GeoStateAgg[]>("/geo/states", metric ? { metric } : {}),
   geoPoints: () => request<GeoPoint[]>("/geo/points"),
   stateNameMap: () => request<StateNameMap>("/geo/state-name-map"),

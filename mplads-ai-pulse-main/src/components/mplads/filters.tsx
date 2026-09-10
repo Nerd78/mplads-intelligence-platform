@@ -4,16 +4,13 @@ import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useGeoStates, useStatsOverview } from "@/lib/hooks";
+import { useGeoStates, useStatsOverview, useWorkCategories } from "@/lib/hooks";
 import { formatAnomalyLabel } from "@/lib/mplads-data";
 import { cn } from "@/lib/utils";
 
 export function FilterBar({ children }: { children: React.ReactNode }) {
   return <div className="flex flex-wrap items-center gap-2">{children}</div>;
 }
-
-const ALL = "__all__";
 
 export type Option = { value: string; label: string; hint?: string };
 
@@ -38,6 +35,7 @@ export function SearchableSelect({
   placeholder,
   width = "w-[190px]",
   disabled,
+  searchable = true,
 }: {
   options: Option[];
   value?: string | undefined;
@@ -46,6 +44,8 @@ export function SearchableSelect({
   placeholder?: string | undefined;
   width?: string | undefined;
   disabled?: boolean | undefined;
+  /** Short, fixed lists skip the search box but keep the identical trigger. */
+  searchable?: boolean | undefined;
 }) {
   const [open, setOpen] = useState(false);
   const selected = options.find((o) => o.value === value);
@@ -69,10 +69,10 @@ export function SearchableSelect({
           <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-ink-subtle" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[260px] p-0" align="start">
+      <PopoverContent className={cn("p-0", searchable ? "w-[260px]" : "w-[200px]")} align="start">
         <Command>
           {/* autoFocus so the list is typeable the moment it opens */}
-          <CommandInput autoFocus placeholder={placeholder ?? "Search…"} className="h-9 text-xs" />
+          {searchable && <CommandInput autoFocus placeholder={placeholder ?? "Search…"} className="h-9 text-xs" />}
           <CommandList className="max-h-[240px]">
             <CommandEmpty className="py-4 text-center text-xs text-ink-muted">No match.</CommandEmpty>
             <CommandGroup>
@@ -155,46 +155,34 @@ const SEVERITIES = ["Low", "Medium", "High", "Critical"];
 
 export function SeveritySelect({ value, onChange }: { value?: string | undefined; onChange: (v: string | undefined) => void }) {
   return (
-    <Select value={value ?? ALL} onValueChange={(v) => onChange(v === ALL ? undefined : v)}>
-      <SelectTrigger className="h-8 w-[150px] text-xs">
-        <SelectValue placeholder="All severities" />
-      </SelectTrigger>
-      <SelectContent className="max-h-[260px]">
-        <SelectItem value={ALL}>All severities</SelectItem>
-        {SEVERITIES.map((s) => (
-          <SelectItem key={s} value={s}>
-            {s}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <SearchableSelect
+      options={SEVERITIES.map((s) => ({ value: s, label: s }))}
+      value={value}
+      onChange={onChange}
+      allLabel="All severities"
+      width="w-[150px]"
+      searchable={false}
+    />
   );
 }
 
-// Fixed list -- there is no dedicated "distinct categories" endpoint, and
-// this set is stable across the loaded dataset (verified against the DB).
-const WORK_CATEGORIES = [
-  "Road",
-  "Normal/Others",
-  "Street Lighting",
-  "School Infrastructure",
-  "Drinking Water",
-  "Community Hall",
-  "Public Utility",
-  "Sports Infrastructure",
-  "Drainage",
-  "Repair and Renovation",
-  "Sanitation",
-  "Health Infrastructure",
-  "Trust and Society",
-  "Other Public Infrastructure",
-  "Bar and Associations",
-];
-
+/**
+ * Categories come from /works/categories, not a hardcoded list. The list used
+ * to be pasted in from a one-off query, which meant a re-scrape introducing a
+ * new category would silently leave it unfilterable — the option simply would
+ * not exist. Counts come along for free and are shown as a hint.
+ */
 export function CategorySelect({ value, onChange }: { value?: string | undefined; onChange: (v: string | undefined) => void }) {
+  const { data } = useWorkCategories();
+  const options = (data ?? []).map((c) => ({
+    value: c.category,
+    label: c.category,
+    hint: c.work_count.toLocaleString("en-IN"),
+  }));
+
   return (
     <SearchableSelect
-      options={WORK_CATEGORIES.map((c) => ({ value: c, label: c }))}
+      options={options}
       value={value}
       onChange={onChange}
       allLabel="All categories"
@@ -234,16 +222,17 @@ export function AnomalySelect({ value, onChange }: { value?: string | undefined;
 
 export function DataSourceSelect({ value, onChange }: { value?: string | undefined; onChange: (v: string | undefined) => void }) {
   return (
-    <Select value={value ?? ALL} onValueChange={(v) => onChange(v === ALL ? undefined : v)}>
-      <SelectTrigger className="h-8 w-[170px] text-xs">
-        <SelectValue placeholder="All sources" />
-      </SelectTrigger>
-      <SelectContent className="max-h-[260px]">
-        <SelectItem value={ALL}>All sources</SelectItem>
-        <SelectItem value="WEB_SCRAPED_REAL">Real · eSAKSHI</SelectItem>
-        <SelectItem value="SYNTHETIC_BENCHMARK">Synthetic · Benchmark</SelectItem>
-      </SelectContent>
-    </Select>
+    <SearchableSelect
+      options={[
+        { value: "WEB_SCRAPED_REAL", label: "Real · eSAKSHI" },
+        { value: "SYNTHETIC_BENCHMARK", label: "Synthetic · Benchmark" },
+      ]}
+      value={value}
+      onChange={onChange}
+      allLabel="All sources"
+      width="w-[170px]"
+      searchable={false}
+    />
   );
 }
 

@@ -65,9 +65,17 @@ def build_work_where(
         clauses.append("w.mp_name ILIKE %(mp_name)s")
         params["mp_name"] = f"%{mp_name}%"
     if search:
+        # work_category is in here deliberately. Categories are a controlled
+        # vocabulary ("Road", "School Infrastructure", "Drainage"...) and are
+        # the first thing people type, but the category name is often absent
+        # from the free-text description: searching "road" without this
+        # clause missed 10,345 works filed under Road, "drainage" missed
+        # 1,106 of 1,745. The dropdown filter alone did not cover it, because
+        # a user typing in the search box has no reason to expect that.
         clauses.append(
             "(w.work_id ILIKE %(search)s OR w.mp_name ILIKE %(search)s OR "
             "w.work_description ILIKE %(search)s OR w.contractor_name ILIKE %(search)s OR "
+            "w.work_category ILIKE %(search)s OR "
             "w.district ILIKE %(search)s OR w.state ILIKE %(search)s OR w.constituency ILIKE %(search)s)"
         )
         params["search"] = f"%{search}%"
