@@ -35,9 +35,7 @@ dashboard.
 - **`docs/`** — [RUNBOOK.md](docs/RUNBOOK.md) (setup, end to end),
   [DETECTION_CHANGELOG.md](docs/DETECTION_CHANGELOG.md) (scoring changes and
   the evidence for them), [UI_DESIGN_SYSTEM.md](docs/UI_DESIGN_SYSTEM.md)
-  (design rules and the reasoning behind them),
-  [DB_GAP_ANALYSIS.md](docs/DB_GAP_ANALYSIS.md),
-  [LOCAL_DEV_SETUP.md](docs/LOCAL_DEV_SETUP.md) (SQLite dev path).
+  (design rules and the reasoning behind them).
 
 ## Already have the database? Pulling this branch
 

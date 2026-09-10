@@ -54,11 +54,8 @@ the Python layer. Verified on a clean database: all 13 tables create and
 > psql -U postgres -d mplads -f migrations/001_drop_orphan_geom_trigger.sql
 > ```
 
-Nothing else depends on it: the geo API routes aggregate by state name, and
-geo-anomaly detection runs in the Python layer off plain `latitude`/`longitude`
-— the same tradeoff already documented in [LOCAL_DEV_SETUP.md](LOCAL_DEV_SETUP.md)
-for the SQLite variant. Install PostGIS and re-run `schema.sql` if DB-side
-spatial queries are ever needed.
+To add PostGIS back on a host that supports it, `schema.sql`'s REV 5 header
+lists exactly what to restore.
 
 ## 3. Load the master dataset
 

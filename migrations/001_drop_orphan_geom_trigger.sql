@@ -16,12 +16,12 @@
 --
 -- Nothing else depends on it. The geo API routes aggregate by state name, and
 -- geo-anomaly detection runs in the Python layer off plain latitude/longitude
--- (see docs/LOCAL_DEV_SETUP.md, which documents the same tradeoff for the
--- SQLite path).
+-- (the same tradeoff the SQLite variant of the schema already took).
 --
--- Safe to run when PostGIS *is* installed: the IF EXISTS guards make it a
--- no-op there, though in that case you want the trigger, so run schema.sql
--- again afterwards to recreate it.
+-- Always safe to run: the IF EXISTS guards make it a no-op on any database
+-- that never had the trigger, which includes every database built from
+-- REV 5. REV 5 does not recreate it, so re-running schema.sql afterwards
+-- will not bring it back.
 
 DROP TRIGGER IF EXISTS trg_work_set_geom ON work;
 DROP FUNCTION IF EXISTS work_set_geom();
