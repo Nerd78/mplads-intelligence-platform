@@ -27,10 +27,21 @@ dashboard.
 - **`mplads-ai-pulse-main/`** — the frontend: a TanStack Start + React 19 +
   shadcn/ui dashboard (Command Center, National/State/District/MP
   Intelligence, Risk Queue, Works, Payments, Risk Map, Model Evaluation).
+- **`migrations/`** — ordered, idempotent SQL applied on top of `schema.sql`,
+  plus [the procedure to run after pulling](migrations/README.md).
 - **`docs/`** — [RUNBOOK.md](docs/RUNBOOK.md) (setup, end to end),
-  [UI_DESIGN_SYSTEM.md](docs/UI_DESIGN_SYSTEM.md) (design rules and the
-  reasoning behind them), [DB_GAP_ANALYSIS.md](docs/DB_GAP_ANALYSIS.md),
+  [DETECTION_CHANGELOG.md](docs/DETECTION_CHANGELOG.md) (scoring changes and
+  the evidence for them), [UI_DESIGN_SYSTEM.md](docs/UI_DESIGN_SYSTEM.md)
+  (design rules and the reasoning behind them),
+  [DB_GAP_ANALYSIS.md](docs/DB_GAP_ANALYSIS.md),
   [LOCAL_DEV_SETUP.md](docs/LOCAL_DEV_SETUP.md) (SQLite dev path).
+
+## Already have the database? Pulling this branch
+
+`schema.sql` is for a fresh database. If you already have one, follow
+**[migrations/README.md](migrations/README.md)** — in short: apply the numbered
+SQL files, then **re-run the detection engine**, because the risk tables are
+derived output and are regenerated rather than migrated.
 
 ## Running locally
 

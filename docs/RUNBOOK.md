@@ -54,9 +54,8 @@ There is one catch worth knowing:
 > column it writes to is not. Left in place it makes *every* insert into `work`
 > fail. Drop it once, after applying the schema:
 >
-> ```sql
-> DROP TRIGGER IF EXISTS trg_work_set_geom ON work;
-> DROP FUNCTION IF EXISTS work_set_geom();
+> ```bash
+> psql -U postgres -d mplads -f migrations/001_drop_orphan_geom_trigger.sql
 > ```
 
 Nothing else depends on it: the geo API routes aggregate by state name, and
@@ -101,12 +100,18 @@ python run_detection.py
 > DATABASE_URL=$(grep '^DATABASE_URL=' ../.env | cut -d= -f2-) python run_detection.py
 > ```
 
+> Delete `model.joblib` first whenever the *rows* used for fitting change.
+> `run_detection.py` only retrains automatically when the feature **count**
+> differs, so a population change silently reuses the stale model.
+
 Takes ~45s for 111k works. Writes `work_risk_score` (111,525),
-`work_risk_flag` (71,288) and `mp_risk_score` (776), then regenerates
+`work_risk_flag` and `mp_risk_score` (776), then regenerates
 `backend/reports/detection_evaluation.{md,json}`.
 
-Severity split on the current dataset: 72,926 Low / 37,206 Medium / 1,343 High
-/ 50 Critical.
+Severity split on the current dataset (v2): 72,825 Low / 37,382 Medium /
+1,276 High / 42 Critical. 524 works with no financial figures are held out of
+ML scoring and flagged `DATA_QUALITY_INCOMPLETE` — see
+[DETECTION_CHANGELOG.md](DETECTION_CHANGELOG.md) for why.
 
 ## 5. Start the API
 
