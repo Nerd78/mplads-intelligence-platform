@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function ErrorState({ message, onRetry }: { message?: string | undefined; onRetry?: (() => void) | undefined }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border py-12 text-center">
-      <AlertTriangle className="h-6 w-6 text-risk-critical" />
+      <AlertTriangle className="h-6 w-6 text-sev-critical" />
       <div className="space-y-1">
         <p className="text-sm font-medium text-foreground">Couldn't load this data</p>
         <p className="max-w-sm text-xs text-muted-foreground">{message ?? "The API request failed. Confirm the backend is running."}</p>

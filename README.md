@@ -27,29 +27,58 @@ dashboard.
 - **`mplads-ai-pulse-main/`** — the frontend: a TanStack Start + React 19 +
   shadcn/ui dashboard (Command Center, National/State/District/MP
   Intelligence, Risk Queue, Works, Payments, Risk Map, Model Evaluation).
+- **`migrations/`** — ordered, idempotent SQL applied on top of `schema.sql`,
+  plus [the procedure to run after pulling](migrations/README.md).
+- **`docs/`** — [RUNBOOK.md](docs/RUNBOOK.md) (setup, end to end),
+  [DETECTION_CHANGELOG.md](docs/DETECTION_CHANGELOG.md) (scoring changes and
+  the evidence for them), [UI_DESIGN_SYSTEM.md](docs/UI_DESIGN_SYSTEM.md)
+  (design rules and the reasoning behind them),
+  [DB_GAP_ANALYSIS.md](docs/DB_GAP_ANALYSIS.md),
+  [LOCAL_DEV_SETUP.md](docs/LOCAL_DEV_SETUP.md) (SQLite dev path).
+
+## Already have the database? Pulling this branch
+
+`schema.sql` is for a fresh database. If you already have one, follow
+**[migrations/README.md](migrations/README.md)** — in short: apply the numbered
+SQL files, then **re-run the detection engine**, because the risk tables are
+derived output and are regenerated rather than migrated.
 
 ## Running locally
 
-**Database**: PostgreSQL with `schema.sql` applied (see that file's header
-for setup notes).
+Full step-by-step instructions, including the failure modes worth knowing
+about, are in **[docs/RUNBOOK.md](docs/RUNBOOK.md)**. The short version:
+
+**Database**: PostgreSQL with `schema.sql` applied (see that file's header for
+setup notes). PostGIS is optional — without it, drop the orphaned
+`trg_work_set_geom` trigger or every insert into `work` fails. The runbook
+covers this.
 
 **Detection engine + API**:
+
 ```bash
 cd backend
-cp .env.example .env   # set DATABASE_URL
+cp .env.example .env   # set DATABASE_URL (percent-encode '@' in the password as %40)
 pip install -r requirements.txt
-python load_master_dataset.py       # loads principal_master_*.json (see Data below)
-python detection/run_detection.py   # scores every work, writes the risk tables
-uvicorn app.main:app --reload --port 8000
+python load_master_dataset.py --data-dir /path/to/master_json
+
+# run_detection reads DATABASE_URL from the environment, not backend/.env
+cd detection
+DATABASE_URL=$(grep '^DATABASE_URL=' ../.env | cut -d= -f2-) python run_detection.py
+
+cd .. && uvicorn app.main:app --reload --port 8000
 ```
 
 **Frontend**:
+
 ```bash
 cd mplads-ai-pulse-main
 cp .env.example .env   # VITE_API_BASE_URL, defaults to http://localhost:8000
-npm install
-npm run dev
+npm install            # .npmrc sets legacy-peer-deps for react-simple-maps@3
+npm run dev            # serves on :8080
 ```
+
+Check readiness with `curl localhost:8000/health` — `/` answers even with no
+database, because the connection pool is built lazily.
 
 ## Data
 

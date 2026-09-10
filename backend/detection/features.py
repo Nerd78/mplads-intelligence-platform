@@ -111,6 +111,18 @@ def build_feature_matrix(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         - df["physical_progress_percent"].fillna(0)
     )
 
+    # Records with no financial figures at all. These are a data-collection
+    # gap, not a behavioral signal: with every money column at zero their
+    # feature vector is unlike any populated row, so IsolationForest scored
+    # them as extreme outliers (mean ML score 99.4 vs 49.8 for populated
+    # rows) purely because the data is absent. They are excluded from ML
+    # fitting and scoring and flagged explicitly instead -- see
+    # run_detection.py. Rules still apply: a blacklisted contractor is a
+    # blacklisted contractor whether or not the money columns were filled in.
+    df["financials_incomplete"] = (df["sanctioned_amount"].fillna(0) <= 0) & (
+        df["expenditure"].fillna(0) <= 0
+    )
+
     numeric_cols = _RAW_NUMERIC_COLUMNS + [
         "utilisation_pct",
         "progress_gap_financial_minus_physical",

@@ -20,6 +20,7 @@ try:
 except AttributeError:
     pass
 
+import pandas as pd
 import psycopg2.extras
 
 from db import get_connection
@@ -125,23 +126,45 @@ def main():
     rule_result = run_rules(enriched_df)
     print(f"  {len(rule_result.flags):,} rule flags across {rule_result.wide.any(axis=1).sum():,} works")
 
-    print("Training/scoring IsolationForest...")
+    # Works with no financial figures at all are held out of the ML layer.
+    # Their all-zero money columns made them look like extreme outliers to
+    # IsolationForest, which measured missing data rather than behavior.
+    # They keep their rule score, get ml_score 0, and carry an explicit
+    # DATA_QUALITY_INCOMPLETE flag so they stay visible rather than being
+    # silently dropped or silently inflated.
+    incomplete = enriched_df["financials_incomplete"]
+    scoreable = feature_matrix.loc[~incomplete]
+    print(
+        f"Training/scoring IsolationForest on {len(scoreable):,} works "
+        f"({int(incomplete.sum()):,} held out: no financial figures)..."
+    )
+
     model = load_model()
-    if model is not None and getattr(model, "n_features_in_", None) != feature_matrix.shape[1]:
+    if model is not None and getattr(model, "n_features_in_", None) != scoreable.shape[1]:
         model = None  # feature set changed, retrain
     if model is None:
-        model = train_model(feature_matrix)
+        model = train_model(scoreable)
         save_model(model)
-    ml_score = score_ml(feature_matrix, model)
+    ml_score = score_ml(scoreable, model).reindex(feature_matrix.index).fillna(0)
 
     print("Computing composite scores...")
     scores_df = compute_scores(rule_result.rule_score, ml_score)
     print(scores_df["severity"].value_counts().to_string())
 
+    dq_flags = pd.DataFrame(
+        {
+            "work_id": enriched_df.index[incomplete],
+            "flag_label": "DATA_QUALITY_INCOMPLETE",
+            "source": "rule",
+            "detail": "No sanctioned amount or expenditure recorded — held out of ML scoring",
+        }
+    )
+    rule_flags = pd.concat([rule_result.flags, dq_flags], ignore_index=True) if len(dq_flags) else rule_result.flags
+
     print("Writing work_risk_score...")
     write_work_risk_scores(conn, scores_df)
     print("Writing work_risk_flag...")
-    write_work_risk_flags(conn, rule_result.flags)
+    write_work_risk_flags(conn, rule_flags)
     print("Writing mp_risk_score...")
     write_mp_risk_scores(conn, enriched_df, scores_df)
 

@@ -28,7 +28,7 @@ function NotFoundComponent() {
         <div className="mt-6">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-blue-800"
           >
             Go home
           </Link>
@@ -60,7 +60,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-blue-800"
           >
             Try again
           </button>
@@ -81,21 +81,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MPLADS Intelligence Platform" },
+      { title: "MPLADS Intelligence — anomaly detection for MP fund works" },
       { name: "description", content: "AI-powered anomaly detection and investigation platform for the MPLADS scheme." },
       { name: "author", content: "MPLADS Intelligence Platform" },
+      { name: "theme-color", content: "#2A5FC4" },
       { property: "og:title", content: "MPLADS Intelligence Platform" },
       { property: "og:description", content: "AI-powered anomaly detection and investigation platform for the MPLADS scheme." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
     ],
   }),
   shellComponent: RootShell,
@@ -129,7 +129,7 @@ function RootComponent() {
           <AppSidebar />
 
           <div className="flex flex-1 flex-col">
-            <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-border bg-card/80 px-4 backdrop-blur">
+            <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-border bg-surface px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="h-6" />
               <div className="flex flex-col">
@@ -143,10 +143,10 @@ function RootComponent() {
               <button
                 type="button"
                 onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }))}
-                className="ml-auto hidden items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted sm:flex"
+                className="ml-auto hidden items-center gap-1.5 rounded-md border border-border bg-surface-sunken px-2.5 py-1 text-xs text-ink-muted transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800 sm:flex"
               >
                 Search everything
-                <kbd className="rounded border border-border bg-background px-1 text-[10px]">Ctrl K</kbd>
+                <kbd className="rounded border border-border-strong bg-surface px-1 text-[10px]">Ctrl K</kbd>
               </button>
             </header>
 

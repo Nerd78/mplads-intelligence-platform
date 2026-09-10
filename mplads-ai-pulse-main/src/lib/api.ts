@@ -237,6 +237,19 @@ export interface StateNameMap {
   polygon_fallback: Record<string, string>;
 }
 
+/** Lok Sabha vs Rajya Sabha rollup — the two are not comparable on totals,
+ * so the UI always shows them side by side rather than pooled. */
+export type HouseStats = {
+  house: string;
+  mp_count: number;
+  works_scored: number;
+  total_sanctioned: number;
+  total_expenditure: number;
+  avg_composite_score: number | null;
+  critical_count: number;
+  high_count: number;
+};
+
 export type WorksFilters = Loose<{
   state: string;
   district: string;
@@ -248,6 +261,9 @@ export type WorksFilters = Loose<{
   date_from: string;
   date_to: string;
   search: string;
+  /** work_risk_flag.flag_label, e.g. AWARDED_TO_BLACKLISTED_CONTRACTOR */
+  flag: string;
+  mp_name: string;
   sort: string;
   limit: number;
   offset: number;
@@ -287,5 +303,6 @@ export const api = {
   statsState: (state: string) => request<StatsState>(`/stats/state/${encodeURIComponent(state)}`),
   statsDistrict: (district: string, state: string) =>
     request<StatsDistrict>(`/stats/district/${encodeURIComponent(district)}`, { state }),
+  statsHouses: () => request<HouseStats[]>("/stats/houses"),
   evaluation: () => request<EvaluationReport>("/stats/evaluation"),
 };

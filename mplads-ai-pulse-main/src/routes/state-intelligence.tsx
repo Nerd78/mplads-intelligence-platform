@@ -6,11 +6,11 @@ import { KpiCard } from "@/components/mplads/KpiCard";
 import { StateSelect } from "@/components/mplads/filters";
 import { RiskDistributionChart } from "@/components/mplads/charts";
 import { WorksTable } from "@/components/mplads/WorksTable";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Panel, PanelHeader, PageHeader } from "@/components/mplads/Panel";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/mplads/StateViews";
 import { useStatsState } from "@/lib/hooks";
-import { formatCurrency, formatNumber } from "@/lib/mplads-data";
+import { formatCurrency, formatDistrict, formatNumber } from "@/lib/mplads-data";
 import type { Loose } from "@/lib/types";
 
 type Search = Loose<{ state: string; offset: number }>;
@@ -35,13 +35,12 @@ function StateIntelligence() {
   return (
     <div className="space-y-6">
       <Breadcrumbs items={[{ label: "State Intelligence", to: "/state-intelligence" }, ...(state ? [{ label: state }] : [])]} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Analytics</p>
-          <h2 className="text-lg font-semibold text-foreground">State intelligence</h2>
-        </div>
-        <StateSelect value={state} onChange={setState} />
-      </div>
+      <PageHeader
+        eyebrow="Analytics"
+        title="State intelligence"
+        description={state ? undefined : "Pick a state to see its KPIs, district ranking and works."}
+        actions={<StateSelect value={state} onChange={setState} />}
+      />
 
       {!state ? (
         <EmptyState title="Pick a state" description="Choose a state above to see its KPIs, district ranking and works." />
@@ -59,19 +58,20 @@ function StateIntelligence() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <RiskDistributionChart data={data?.severity_breakdown} loading={isLoading} />
 
-            <Card className="border-border/80 shadow-none lg:col-span-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">District ranking</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <Panel className="lg:col-span-2">
+              <PanelHeader
+                title="District ranking"
+                description="Real districts only — synthetic benchmark works carry placeholder names."
+              />
+              <div>
                 {isLoading ? (
-                  <TableSkeleton rows={6} cols={3} />
+                  <div className="p-4"><TableSkeleton rows={6} cols={3} /></div>
                 ) : !data || data.districts.length === 0 ? (
-                  <EmptyState title="No districts recorded" />
+                  <div className="p-4"><EmptyState title="No districts recorded" /></div>
                 ) : (
-                  <div className="max-h-[280px] overflow-y-auto">
+                  <div className="max-h-[280px] overflow-auto">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 z-10 bg-surface-sunken">
                         <TableRow>
                           <TableHead>District</TableHead>
                           <TableHead className="text-right">Works</TableHead>
@@ -86,28 +86,26 @@ function StateIntelligence() {
                             className="cursor-pointer"
                             onClick={() => navigate({ to: "/district-intelligence", search: { state, district: d.district } })}
                           >
-                            <TableCell className="text-xs font-medium">{d.district}</TableCell>
-                            <TableCell className="text-right text-xs tabular-nums">{formatNumber(d.work_count)}</TableCell>
-                            <TableCell className="text-right text-xs tabular-nums">{d.avg_composite_score.toFixed(0)}</TableCell>
-                            <TableCell className="text-right text-xs tabular-nums">{d.critical_count}</TableCell>
+                            <TableCell className="text-xs font-medium text-ink">{formatDistrict(d.district)}</TableCell>
+                            <TableCell className="text-right text-xs text-ink tnum">{formatNumber(d.work_count)}</TableCell>
+                            <TableCell className="text-right text-xs text-ink tnum">{d.avg_composite_score.toFixed(0)}</TableCell>
+                            <TableCell className="text-right text-xs text-ink tnum">{d.critical_count}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </Panel>
           </div>
 
-          <Card className="border-border/80 shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Works in {state}</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Panel>
+            <PanelHeader title={`Works in ${state}`} description="Filter and search within this state." />
+            <div className="p-3">
               <WorksTable filters={{ state, offset }} onPageChange={setOffset} />
-            </CardContent>
-          </Card>
+            </div>
+          </Panel>
         </>
       )}
     </div>

@@ -1,22 +1,77 @@
-import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  LabelList,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-import { ChartCard } from "./ChartCard";
+import { ChartCard, LegendItem } from "./ChartCard";
 import type { SeverityBreakdown } from "@/lib/api";
+import { SEVERITY_ORDER, formatAnomalyLabel, formatCompactNumber } from "@/lib/mplads-data";
 
 const SEVERITY_COLORS: Record<string, string> = {
-  Low: "var(--risk-low)",
-  Medium: "var(--risk-medium)",
-  High: "var(--risk-high)",
-  Critical: "var(--risk-critical)",
+  Low: "var(--sev-low)",
+  Medium: "var(--sev-medium)",
+  High: "var(--sev-high)",
+  Critical: "var(--sev-critical)",
 };
 
-const tooltipStyle = {
-  fontSize: 12,
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "var(--popover)",
-  color: "var(--popover-foreground)",
-};
+/**
+ * Sequential blue ramp, light -> dark. Used wherever a bar encodes *magnitude*
+ * (counts, average scores). The previous build painted these bars green/amber
+ * by threshold, which made a "highest-risk states" chart read mostly green and
+ * implied a severity bucket the number does not carry.
+ */
+const SEQ = ["var(--chart-seq-1)", "var(--chart-seq-2)", "var(--chart-seq-3)", "var(--chart-seq-4)", "var(--chart-seq-5)"];
+
+/** Darker step = larger value, computed against the visible max. */
+function seqColor(value: number, max: number): string {
+  if (max <= 0) return SEQ[2] as string;
+  const idx = Math.min(SEQ.length - 1, Math.floor((value / max) * SEQ.length));
+  return SEQ[idx] as string;
+}
+
+const axisTick = { fontSize: 11, fill: "var(--ink-muted)" };
+
+function ChartTooltip({
+  active,
+  payload,
+  label,
+  valueFormatter,
+}: {
+  active?: boolean | undefined;
+  payload?: { name?: string; value?: number; color?: string; payload?: Record<string, unknown> }[] | undefined;
+  label?: string | number | undefined;
+  valueFormatter?: ((v: number) => string) | undefined;
+}) {
+  if (!active || !payload?.length) return null;
+  const fmt = valueFormatter ?? ((v: number) => v.toLocaleString("en-IN"));
+  return (
+    <div className="rounded-lg border border-border-strong bg-surface px-2.5 py-2 shadow-sm">
+      {label !== undefined && label !== "" && (
+        <p className="mb-1 max-w-56 text-xs font-semibold text-ink">{String(label)}</p>
+      )}
+      <div className="space-y-0.5">
+        {payload.map((p, i) => (
+          <div key={i} className="flex items-center gap-2 text-xs">
+            <span className="h-2 w-2 shrink-0 rounded-[2px]" style={{ background: p.color }} aria-hidden="true" />
+            {p.name && <span className="text-ink-muted">{p.name}</span>}
+            <span className="ml-auto font-semibold text-ink tnum">{fmt(Number(p.value ?? 0))}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function RiskDistributionChart({
   data,
@@ -29,10 +84,9 @@ export function RiskDistributionChart({
   error?: unknown;
   onRetry?: (() => void) | undefined;
 }) {
-  const rows = data
-    ? (["Low", "Medium", "High", "Critical"] as const).map((k) => ({ name: k, value: data[k] }))
-    : [];
+  const rows = data ? SEVERITY_ORDER.map((k) => ({ name: k, value: data[k] })) : [];
   const empty = rows.every((r) => r.value === 0);
+  const total = rows.reduce((sum, r) => sum + r.value, 0);
 
   return (
     <ChartCard
@@ -42,15 +96,34 @@ export function RiskDistributionChart({
       error={error}
       onRetry={onRetry}
       empty={empty}
+      height={220}
+      legend={rows.map((r) => (
+        <LegendItem key={r.name} color={SEVERITY_COLORS[r.name] as string} label={`${r.name} · ${r.value.toLocaleString("en-IN")}`} />
+      ))}
     >
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          <Pie data={rows} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={2}>
+          <Pie
+            data={rows}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={54}
+            outerRadius={82}
+            paddingAngle={2}
+            stroke="var(--surface)"
+            strokeWidth={2}
+          >
             {rows.map((r) => (
-              <Cell key={r.name} fill={SEVERITY_COLORS[r.name]} />
+              <Cell key={r.name} fill={SEVERITY_COLORS[r.name] as string} />
             ))}
           </Pie>
-          <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [v.toLocaleString("en-IN"), n]} />
+          <Tooltip
+            content={
+              <ChartTooltip
+                valueFormatter={(v) => `${v.toLocaleString("en-IN")} (${total ? ((v / total) * 100).toFixed(1) : 0}%)`}
+              />
+            }
+          />
         </PieChart>
       </ResponsiveContainer>
     </ChartCard>
@@ -73,26 +146,46 @@ export function AnomalyDistributionChart({
         .filter(([label]) => label !== "NORMAL")
         .sort((a, b) => b[1] - a[1])
         .slice(0, 8)
-        .map(([label, count]) => ({ label: label.replaceAll("_", " "), count }))
+        .map(([label, count]) => ({ label: formatAnomalyLabel(label), count }))
     : [];
+  const max = Math.max(0, ...rows.map((r) => r.count));
 
   return (
     <ChartCard
       title="Anomaly signal composition"
-      explanation="Top rule/ML flags triggered across works (a work may carry more than one)."
+      explanation="Top rule and ML flags across works — one work can carry several."
       loading={loading}
       error={error}
       onRetry={onRetry}
       empty={rows.length === 0}
-      height={280}
+      height={300}
     >
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={rows} layout="vertical" margin={{ left: 8, right: 16 }}>
-          <CartesianGrid horizontal={false} stroke="var(--border)" />
-          <XAxis type="number" tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
-          <YAxis type="category" dataKey="label" width={150} tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-          <Tooltip contentStyle={tooltipStyle} />
-          <Bar dataKey="count" fill="var(--primary)" radius={[0, 3, 3, 0]} />
+        <BarChart data={rows} layout="vertical" margin={{ left: 4, right: 44, top: 4, bottom: 4 }} barCategoryGap={6}>
+          <CartesianGrid horizontal={false} stroke="var(--grid)" />
+          <XAxis type="number" tick={axisTick} tickFormatter={formatCompactNumber} axisLine={false} tickLine={false} />
+          <YAxis
+            type="category"
+            dataKey="label"
+            width={148}
+            tick={axisTick}
+            axisLine={false}
+            tickLine={false}
+            interval={0}
+          />
+          <Tooltip cursor={{ fill: "var(--surface-sunken)" }} content={<ChartTooltip />} />
+          <Bar dataKey="count" name="Works flagged" radius={[0, 4, 4, 0]} barSize={16}>
+            {rows.map((r) => (
+              <Cell key={r.label} fill={seqColor(r.count, max)} />
+            ))}
+            <LabelList
+              dataKey="count"
+              position="right"
+              offset={8}
+              formatter={(v: number) => formatCompactNumber(v)}
+              style={{ fontSize: 11, fill: "var(--ink-muted)", fontVariantNumeric: "tabular-nums" }}
+            />
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>
@@ -113,32 +206,44 @@ export function RiskByStateChart({
   onBarClick?: ((state: string) => void) | undefined;
 }) {
   const rows = (data ?? []).slice(0, 10);
+  const max = Math.max(0, ...rows.map((r) => r.avg_composite_score));
+
   return (
     <ChartCard
       title="Highest-risk states"
-      explanation="Average composite risk score across each state's works."
+      explanation="Average composite risk score (0–100) across each state's works. Select a bar to drill in."
       loading={loading}
       error={error}
       onRetry={onRetry}
       empty={rows.length === 0}
-      height={280}
+      height={300}
     >
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={rows} layout="vertical" margin={{ left: 8, right: 16 }} onClick={(e) => {
-          const label = e?.activeLabel as string | undefined;
-          if (label && onBarClick) onBarClick(label);
-        }}>
-          <CartesianGrid horizontal={false} stroke="var(--border)" />
-          <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
-          <YAxis type="category" dataKey="state" width={130} tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-          <Tooltip contentStyle={tooltipStyle} />
-          <Bar dataKey="avg_composite_score" radius={[0, 3, 3, 0]} className="cursor-pointer">
+        <BarChart
+          data={rows}
+          layout="vertical"
+          margin={{ left: 4, right: 40, top: 4, bottom: 4 }}
+          barCategoryGap={6}
+          onClick={(e) => {
+            const label = e?.activeLabel as string | undefined;
+            if (label && onBarClick) onBarClick(label);
+          }}
+        >
+          <CartesianGrid horizontal={false} stroke="var(--grid)" />
+          <XAxis type="number" domain={[0, 100]} tick={axisTick} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="state" width={124} tick={axisTick} axisLine={false} tickLine={false} interval={0} />
+          <Tooltip cursor={{ fill: "var(--surface-sunken)" }} content={<ChartTooltip valueFormatter={(v) => v.toFixed(1)} />} />
+          <Bar dataKey="avg_composite_score" name="Avg risk score" radius={[0, 4, 4, 0]} barSize={16} className="cursor-pointer">
             {rows.map((r) => (
-              <Cell
-                key={r.state}
-                fill={r.avg_composite_score >= 61 ? "var(--risk-high)" : r.avg_composite_score >= 31 ? "var(--risk-medium)" : "var(--risk-low)"}
-              />
+              <Cell key={r.state} fill={seqColor(r.avg_composite_score, max)} />
             ))}
+            <LabelList
+              dataKey="avg_composite_score"
+              position="right"
+              offset={8}
+              formatter={(v: number) => v.toFixed(1)}
+              style={{ fontSize: 11, fill: "var(--ink-muted)", fontVariantNumeric: "tabular-nums" }}
+            />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
@@ -167,15 +272,21 @@ export function ProgressComparisonChart({
       onRetry={onRetry}
       empty={rows.length === 0}
       height={260}
+      legend={
+        <>
+          <LegendItem color="var(--chart-pair-a)" label="Physical %" />
+          <LegendItem color="var(--chart-pair-b)" label="Financial %" />
+        </>
+      }
     >
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={rows}>
-          <CartesianGrid vertical={false} stroke="var(--border)" />
-          <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" hide={rows.length > 12} />
-          <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
-          <Tooltip contentStyle={tooltipStyle} />
-          <Bar dataKey="physical" name="Physical %" fill="var(--chart-2)" radius={[3, 3, 0, 0]} />
-          <Bar dataKey="financial" name="Financial %" fill="var(--chart-4)" radius={[3, 3, 0, 0]} />
+        <BarChart data={rows} margin={{ left: 0, right: 8, top: 4, bottom: 4 }}>
+          <CartesianGrid vertical={false} stroke="var(--grid)" />
+          <XAxis dataKey="label" tick={axisTick} axisLine={false} tickLine={false} hide={rows.length > 12} />
+          <YAxis domain={[0, 100]} tick={axisTick} axisLine={false} tickLine={false} />
+          <Tooltip cursor={{ fill: "var(--surface-sunken)" }} content={<ChartTooltip valueFormatter={(v) => `${v}%`} />} />
+          <Bar dataKey="physical" name="Physical %" fill="var(--chart-pair-a)" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="financial" name="Financial %" fill="var(--chart-pair-b)" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>
@@ -197,7 +308,11 @@ export function RiskTrendChart({
   return (
     <ChartCard
       title="Risk trend"
-      explanation={rows.length > 1 ? "Composite score across detection runs." : "Only one detection run recorded so far -- a trend needs at least two."}
+      explanation={
+        rows.length > 1
+          ? "Composite score across detection runs."
+          : "Only one detection run recorded so far — a trend needs at least two."
+      }
       loading={loading}
       error={error}
       onRetry={onRetry}
@@ -205,12 +320,20 @@ export function RiskTrendChart({
       height={200}
     >
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={rows}>
-          <CartesianGrid vertical={false} stroke="var(--border)" />
-          <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-          <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
-          <Tooltip contentStyle={tooltipStyle} />
-          <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={2} dot={{ r: 3 }} />
+        <LineChart data={rows} margin={{ left: 0, right: 8, top: 4, bottom: 4 }}>
+          <CartesianGrid vertical={false} stroke="var(--grid)" />
+          <XAxis dataKey="label" tick={axisTick} axisLine={false} tickLine={false} />
+          <YAxis domain={[0, 100]} tick={axisTick} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip valueFormatter={(v) => v.toFixed(1)} />} />
+          <Line
+            type="monotone"
+            dataKey="score"
+            name="Composite score"
+            stroke="var(--blue-600)"
+            strokeWidth={2}
+            dot={{ r: 4, fill: "var(--blue-600)", stroke: "var(--surface)", strokeWidth: 2 }}
+            activeDot={{ r: 6, fill: "var(--blue-700)", stroke: "var(--surface)", strokeWidth: 2 }}
+          />
         </LineChart>
       </ResponsiveContainer>
     </ChartCard>

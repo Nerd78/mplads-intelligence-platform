@@ -5,11 +5,12 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { FilterBar, DataSourceSelect, DistrictSelect, StateSelect } from "@/components/mplads/filters";
+import { PageHeader } from "@/components/mplads/Panel";
 import { SeverityBadge } from "@/components/mplads/SeverityBadge";
 import { DataSourceBadge } from "@/components/mplads/DataSourceBadge";
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/mplads/StateViews";
 import { useAlerts } from "@/lib/hooks";
-import { formatCurrency } from "@/lib/mplads-data";
+import { formatAnomalyLabel, formatCurrency, formatDistrict } from "@/lib/mplads-data";
 import type { Loose } from "@/lib/types";
 
 type Search = Loose<{ severity: string; state: string; district: string; data_source: string; offset: number }>;
@@ -46,13 +47,11 @@ function RiskQueue() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Investigations</p>
-          <h2 className="text-lg font-semibold text-foreground">Risk queue</h2>
-          <p className="text-sm text-muted-foreground">Every work at Medium severity or above, worst-first. Expand a case to see the evidence.</p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Investigations"
+        title="Risk queue"
+        description="Every work at Medium severity or above, worst-first. Expand a case to see the evidence."
+      />
 
       <Tabs value={severity ?? "all"} onValueChange={(v) => patch({ severity: v === "all" ? undefined : v })}>
         <TabsList>
@@ -82,18 +81,24 @@ function RiskQueue() {
             {data.items.map((item) => (
               <AccordionItem key={item.work_id} value={item.work_id} className="rounded-lg border border-border bg-card px-3">
                 <AccordionTrigger className="hover:no-underline">
-                  <div className="grid flex-1 grid-cols-2 items-center gap-2 pr-2 text-left sm:grid-cols-5">
+                  {/* Explicit track widths: an even 5-column grid gave the
+                      badge a ~200px track and left the description cramped. */}
+                  <div className="grid flex-1 grid-cols-[84px_1fr] items-center gap-3 pr-2 text-left sm:grid-cols-[84px_1fr_140px_100px]">
                     <SeverityBadge severity={item.severity} />
-                    <span className="col-span-2 truncate text-xs font-medium sm:col-span-2">{item.work_description || item.work_id}</span>
-                    <span className="hidden text-xs text-muted-foreground sm:block">{item.state ?? "—"}</span>
-                    <span className="hidden text-right text-xs tabular-nums sm:block">{formatCurrency(item.expenditure)}</span>
+                    <span className="truncate text-xs font-medium text-ink">
+                      {item.work_description || item.work_id}
+                    </span>
+                    <span className="hidden truncate text-xs text-ink-muted sm:block">{item.state ?? "—"}</span>
+                    <span className="hidden whitespace-nowrap text-right text-xs text-ink tnum sm:block">
+                      {formatCurrency(item.expenditure)}
+                    </span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="flex flex-wrap items-center gap-2 pb-3">
                     <DataSourceBadge dataSource={item.data_source} />
                     <span className="text-xs text-muted-foreground">
-                      {item.mp_name ?? "Unknown MP"} · {item.district ?? "—"}, {item.state ?? "—"}
+                      {item.mp_name ?? "Unknown MP"} · {formatDistrict(item.district)}, {item.state ?? "—"}
                     </span>
                     <Button
                       size="sm"
@@ -109,10 +114,10 @@ function RiskQueue() {
                   ) : (
                     <ul className="grid gap-2 sm:grid-cols-2">
                       {item.flags.map((f) => (
-                        <li key={`${f.flag_label}-${f.source}`} className="rounded-md border border-border bg-muted/40 p-2 text-xs">
+                        <li key={`${f.flag_label}-${f.source}`} className="rounded-md border border-border bg-surface-sunken p-2 text-xs">
                           <div className="flex items-center gap-1.5 font-medium">
                             {f.source === "ml_outlier" ? <FlaskConical className="h-3 w-3" /> : <Ban className="h-3 w-3" />}
-                            {f.flag_label.replaceAll("_", " ")}
+                            {formatAnomalyLabel(f.flag_label)}
                           </div>
                           {f.detail && <p className="mt-1 text-muted-foreground">{f.detail}</p>}
                         </li>

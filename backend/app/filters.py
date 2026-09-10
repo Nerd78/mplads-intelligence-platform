@@ -19,6 +19,8 @@ def build_work_where(
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
     search: Optional[str] = None,
+    flag: Optional[str] = None,
+    mp_name: Optional[str] = None,
 ) -> tuple[str, dict]:
     clauses = ["1=1"]
     params: dict = {}
@@ -50,6 +52,18 @@ def build_work_where(
     if date_to:
         clauses.append("w.sanction_date <= %(date_to)s")
         params["date_to"] = date_to
+    if flag:
+        # EXISTS rather than a join: a work can carry several flags, and
+        # joining work_risk_flag would multiply the row out and break the
+        # COUNT(*) OVER() total the list endpoints page on.
+        clauses.append(
+            "EXISTS (SELECT 1 FROM work_risk_flag f "
+            "WHERE f.work_id = w.work_id AND f.flag_label = %(flag)s)"
+        )
+        params["flag"] = flag
+    if mp_name:
+        clauses.append("w.mp_name ILIKE %(mp_name)s")
+        params["mp_name"] = f"%{mp_name}%"
     if search:
         clauses.append(
             "(w.work_id ILIKE %(search)s OR w.mp_name ILIKE %(search)s OR "

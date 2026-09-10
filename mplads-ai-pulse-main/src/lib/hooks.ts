@@ -82,6 +82,10 @@ export function useStatsDistrict(district: string | undefined, state: string | u
   });
 }
 
+export function useHouseStats() {
+  return useQuery({ queryKey: ["stats-houses"], queryFn: api.statsHouses, staleTime: 60_000 });
+}
+
 export function useEvaluation() {
   return useQuery({ queryKey: ["evaluation"], queryFn: api.evaluation, staleTime: 60_000 });
 }
