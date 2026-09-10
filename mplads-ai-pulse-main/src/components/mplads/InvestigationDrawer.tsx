@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { SeverityBadge } from "./SeverityBadge";
 import { DataSourceBadge } from "./DataSourceBadge";
 import { CardSkeleton, ErrorState } from "./StateViews";
-import { formatCurrency, formatDate, formatDistrict, formatPercent } from "@/lib/mplads-data";
+import { formatAnomalyLabel, formatCurrency, formatDate, formatDistrict, formatPercent } from "@/lib/mplads-data";
 import { useWorkDetail } from "@/lib/hooks";
 
 export function InvestigationDrawer({
@@ -96,10 +96,10 @@ export function InvestigationDrawer({
               ) : (
                 <ul className="space-y-2">
                   {work.flags.map((f) => (
-                    <li key={`${f.flag_label}-${f.source}`} className="rounded-md border border-border bg-muted/40 p-2.5 text-xs">
+                    <li key={`${f.flag_label}-${f.source}`} className="rounded-md border border-border bg-surface-sunken p-2.5 text-xs">
                       <div className="flex items-center gap-1.5 font-medium text-foreground">
                         {f.source === "ml_outlier" ? <FlaskConical className="h-3 w-3" /> : <Ban className="h-3 w-3" />}
-                        {f.flag_label.replaceAll("_", " ")}
+                        {formatAnomalyLabel(f.flag_label)}
                       </div>
                       {f.detail && <p className="mt-1 text-muted-foreground">{f.detail}</p>}
                     </li>

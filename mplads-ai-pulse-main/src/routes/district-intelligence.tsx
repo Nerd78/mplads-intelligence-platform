@@ -73,7 +73,7 @@ function DistrictIntelligence() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <RiskDistributionChart data={data?.severity_breakdown} loading={isLoading} />
 
-            <Card className="border-border/80 shadow-none lg:col-span-2">
+            <Card className="border-border shadow-none lg:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">MPs active in this district</CardTitle>
               </CardHeader>
@@ -106,7 +106,7 @@ function DistrictIntelligence() {
             </Card>
           </div>
 
-          <Card className="border-border/80 shadow-none">
+          <Card className="border-border shadow-none">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">
                 High-risk works in {district}, {state}

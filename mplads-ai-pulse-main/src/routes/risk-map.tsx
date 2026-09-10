@@ -22,7 +22,7 @@ function RiskMapPage() {
           state/district level instead of as individual points.
         </p>
       </div>
-      <Card className="flex-1 border-border/80 shadow-none">
+      <Card className="flex-1 border-border shadow-none">
         <CardContent className="h-[640px] p-2">
           <RiskMap onStateClick={(state) => navigate({ to: "/state-intelligence", search: { state } })} />
         </CardContent>

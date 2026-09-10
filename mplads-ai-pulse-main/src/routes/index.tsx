@@ -114,6 +114,7 @@ function CommandCenter() {
               <EmptyState title="No open cases" />
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-surface-sunken">
@@ -142,6 +143,7 @@ function CommandCenter() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </Panel>
 

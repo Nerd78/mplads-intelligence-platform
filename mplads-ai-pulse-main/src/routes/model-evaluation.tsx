@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { KpiCard } from "@/components/mplads/KpiCard";
 import { ErrorState, TableSkeleton } from "@/components/mplads/StateViews";
 import { useEvaluation } from "@/lib/hooks";
-import { formatDate, formatNumber } from "@/lib/mplads-data";
+import { formatAnomalyLabel, formatDate, formatNumber } from "@/lib/mplads-data";
 
 export const Route = createFileRoute("/model-evaluation")({
   head: () => ({ meta: [{ title: "Model Evaluation — MPLADS Intelligence" }] }),
@@ -28,7 +28,7 @@ function EvalTable({ rows }: { rows: { label: string; support: number; precision
       <TableBody>
         {rows.map((r) => (
           <TableRow key={r.label}>
-            <TableCell className="text-xs font-medium">{r.label.replaceAll("_", " ")}</TableCell>
+            <TableCell className="text-xs font-medium">{formatAnomalyLabel(r.label)}</TableCell>
             <TableCell className="text-right text-xs tabular-nums">{formatNumber(r.support)}</TableCell>
             <TableCell className="text-right text-xs tabular-nums">{r.precision.toFixed(3)}</TableCell>
             <TableCell className="text-right text-xs tabular-nums">{r.recall.toFixed(3)}</TableCell>
@@ -67,7 +67,7 @@ function ModelEvaluation() {
         <KpiCard label="Overall F1 (benchmark)" value={data?.synthetic_overall.f1.toFixed(3) ?? "—"} loading={isLoading} />
       </div>
 
-      <Card className="border-primary/30 bg-primary/5 shadow-none">
+      <Card className="border-blue-300 bg-blue-50 shadow-none">
         <CardContent className="flex gap-3 p-4 text-xs text-foreground">
           <Info className="h-4 w-4 shrink-0 text-primary" />
           <p>
@@ -80,7 +80,7 @@ function ModelEvaluation() {
         </CardContent>
       </Card>
 
-      <Card className="border-border/80 shadow-none">
+      <Card className="border-border shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Synthetic benchmark — independent evaluation</CardTitle>
           <p className="text-xs text-muted-foreground">
@@ -91,14 +91,14 @@ function ModelEvaluation() {
         <CardContent>{isLoading ? <TableSkeleton rows={8} cols={5} /> : <EvalTable rows={data?.synthetic_rows ?? []} />}</CardContent>
       </Card>
 
-      <Card className="border-border/80 shadow-none">
+      <Card className="border-border shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Real records — consistency check, not independent evaluation</CardTitle>
         </CardHeader>
         <CardContent>{isLoading ? <TableSkeleton rows={3} cols={5} /> : <EvalTable rows={data?.real_consistency_rows ?? []} />}</CardContent>
       </Card>
 
-      <Card className="border-border/80 shadow-none">
+      <Card className="border-border shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Methodology</CardTitle>
         </CardHeader>

@@ -10,7 +10,7 @@ import { SeverityBadge } from "@/components/mplads/SeverityBadge";
 import { DataSourceBadge } from "@/components/mplads/DataSourceBadge";
 import { EmptyState, ErrorState, CardSkeleton } from "@/components/mplads/StateViews";
 import { useWorkDetail } from "@/lib/hooks";
-import { formatCurrency, formatDate, formatDistrict, formatPercent } from "@/lib/mplads-data";
+import { formatAnomalyLabel, formatCurrency, formatDate, formatDistrict, formatPercent } from "@/lib/mplads-data";
 import type { Loose } from "@/lib/types";
 
 type Search = Loose<{ work_id: string }>;
@@ -70,7 +70,7 @@ function ProjectInvestigation() {
 
       {/* 2. Risk summary */}
       {work.risk && (
-        <Card className="border-border/80 shadow-none">
+        <Card className="border-border shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Risk summary</CardTitle>
           </CardHeader>
@@ -99,7 +99,7 @@ function ProjectInvestigation() {
       )}
 
       {/* 3. Evidence */}
-      <Card className="border-border/80 shadow-none">
+      <Card className="border-border shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Evidence — why this was flagged</CardTitle>
           <p className="text-xs text-muted-foreground">A signal, not a finding of fraud — each item is an independently checkable rule or statistical outlier.</p>
@@ -110,10 +110,10 @@ function ProjectInvestigation() {
           ) : (
             <ul className="grid gap-2 sm:grid-cols-2">
               {work.flags.map((f) => (
-                <li key={`${f.flag_label}-${f.source}`} className="rounded-md border border-border bg-muted/40 p-2.5 text-xs">
+                <li key={`${f.flag_label}-${f.source}`} className="rounded-md border border-border bg-surface-sunken p-2.5 text-xs">
                   <div className="flex items-center gap-1.5 font-medium text-foreground">
                     {f.source === "ml_outlier" ? <FlaskConical className="h-3 w-3" /> : <Ban className="h-3 w-3" />}
-                    {f.flag_label.replaceAll("_", " ")}
+                    {formatAnomalyLabel(f.flag_label)}
                   </div>
                   {f.detail && <p className="mt-1 text-muted-foreground">{f.detail}</p>}
                 </li>
@@ -125,7 +125,7 @@ function ProjectInvestigation() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* 4. Timeline */}
-        <Card className="border-border/80 shadow-none">
+        <Card className="border-border shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-1.5 text-sm font-medium"><Calendar className="h-4 w-4" /> Timeline</CardTitle>
           </CardHeader>
@@ -146,7 +146,7 @@ function ProjectInvestigation() {
         </Card>
 
         {/* 5. Financials */}
-        <Card className="border-border/80 shadow-none">
+        <Card className="border-border shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-1.5 text-sm font-medium"><IndianRupee className="h-4 w-4" /> Financial summary</CardTitle>
           </CardHeader>
@@ -175,7 +175,7 @@ function ProjectInvestigation() {
         </Card>
 
         {/* 6. Progress */}
-        <Card className="border-border/80 shadow-none">
+        <Card className="border-border shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Progress</CardTitle>
           </CardHeader>
@@ -198,7 +198,7 @@ function ProjectInvestigation() {
         </Card>
 
         {/* 8. Contractor */}
-        <Card className="border-border/80 shadow-none">
+        <Card className="border-border shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-1.5 text-sm font-medium"><Building2 className="h-4 w-4" /> Contractor</CardTitle>
           </CardHeader>
@@ -216,7 +216,7 @@ function ProjectInvestigation() {
       </div>
 
       {/* 7. Payments */}
-      <Card className="border-border/80 shadow-none">
+      <Card className="border-border shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-1.5 text-sm font-medium"><Receipt className="h-4 w-4" /> Payments</CardTitle>
         </CardHeader>
@@ -251,7 +251,7 @@ function ProjectInvestigation() {
       </Card>
 
       {/* 9. Geographic information */}
-      <Card className="border-border/80 shadow-none">
+      <Card className="border-border shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-1.5 text-sm font-medium"><MapPin className="h-4 w-4" /> Geographic information</CardTitle>
         </CardHeader>
@@ -267,7 +267,7 @@ function ProjectInvestigation() {
       </Card>
 
       {/* 10. Data provenance */}
-      <Card className="border-border/80 shadow-none">
+      <Card className="border-border shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-1.5 text-sm font-medium"><User className="h-4 w-4" /> Data provenance</CardTitle>
         </CardHeader>

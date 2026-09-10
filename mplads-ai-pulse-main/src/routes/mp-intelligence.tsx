@@ -81,7 +81,7 @@ function MpIntelligence() {
         <ErrorState message={(error as Error)?.message} onRetry={refetch} />
       ) : (
         <>
-          <Card className="border-border/80 shadow-none">
+          <Card className="border-border shadow-none">
             <CardContent className="flex flex-wrap items-center justify-between gap-4 p-4">
               <div>
                 <p className="text-base font-semibold text-foreground">{mp?.name ?? "—"}</p>
@@ -105,7 +105,7 @@ function MpIntelligence() {
             <ProgressComparisonChart data={progressRows} loading={isLoading} />
           </div>
 
-          <Card className="border-border/80 shadow-none">
+          <Card className="border-border shadow-none">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Project portfolio — highest risk first</CardTitle>
             </CardHeader>
