@@ -125,6 +125,11 @@ class Alert(WorkSummary):
     flags: list[RiskFlag] = []
 
 
+class WorkCategory(BaseModel):
+    category: str
+    work_count: int
+
+
 class GeoStateAgg(BaseModel):
     state: str
     work_count: int

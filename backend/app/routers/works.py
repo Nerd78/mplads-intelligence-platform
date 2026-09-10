@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from ..db import get_cursor
 from ..filters import build_work_where, sort_clause
-from ..schemas import Page, Payment, RiskFlag, RiskScore, WorkDetail, WorkSummary
+from ..schemas import Page, Payment, RiskFlag, RiskScore, WorkCategory, WorkDetail, WorkSummary
 
 router = APIRouter(prefix="/works", tags=["works"])
 
@@ -81,6 +81,28 @@ def list_works(
     total = rows[0]["total_count"] if rows else 0
     items = [WorkSummary(**{k: v for k, v in r.items() if k != "total_count"}) for r in rows]
     return Page(items=items, total=total, limit=limit, offset=offset)
+
+
+# Declared BEFORE /{work_id}: FastAPI matches in definition order, so the
+# other way round "categories" is swallowed as a work_id and 404s.
+@router.get("/categories", response_model=list[WorkCategory])
+def list_categories():
+    """Distinct work categories with their work counts, commonest first.
+
+    The frontend used to carry this list hardcoded, which meant a re-scrape
+    introducing a new category would silently make it unfilterable.
+    """
+    with get_cursor() as cur:
+        cur.execute(
+            """
+            SELECT work_category AS category, COUNT(*) AS work_count
+            FROM work
+            WHERE work_category IS NOT NULL AND work_category <> ''
+            GROUP BY work_category
+            ORDER BY COUNT(*) DESC
+            """
+        )
+        return cur.fetchall()
 
 
 @router.get("/{work_id}", response_model=WorkDetail)

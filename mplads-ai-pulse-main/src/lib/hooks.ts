@@ -50,6 +50,12 @@ export function useAlerts(filters: Parameters<typeof api.alerts>[0] = {}) {
   });
 }
 
+export function useWorkCategories() {
+  // Categories change only when the dataset is reloaded, so this is cached
+  // for the session rather than refetched per filter render.
+  return useQuery({ queryKey: ["work-categories"], queryFn: api.workCategories, staleTime: Infinity });
+}
+
 export function useGeoStates(metric?: MapMetric) {
   return useQuery({ queryKey: ["geo-states", metric], queryFn: () => api.geoStates(metric), staleTime: 60_000 });
 }
