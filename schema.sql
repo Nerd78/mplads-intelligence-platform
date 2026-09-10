@@ -1,5 +1,24 @@
 -- ============================================================================
--- MPLADS AI Anomaly Detection — PostgreSQL + PostGIS schema
+-- MPLADS AI Anomaly Detection — PostgreSQL schema
+-- REV 5 — dropped the PostGIS dependency entirely (REV 3/4 required it).
+--         `CREATE EXTENSION postgis` fails on any host where the package is
+--         not installed server-side, and that is not fixable from SQL. Worse,
+--         the failure was silent-ish: the `geom` column never got created but
+--         the trg_work_set_geom trigger DID (plpgsql bodies are not validated
+--         at creation), leaving a table that rejected every INSERT.
+--
+--         Nothing in the loader, the API or the detection engine calls a
+--         PostGIS function. `latitude`/`longitude` stay as plain columns, the
+--         geo routes aggregate by state name, and geo-anomaly detection runs
+--         in Python/pandas — the same approach schema_sqlite.sql already
+--         took. To add PostGIS back on a host that supports it: re-add
+--         `CREATE EXTENSION postgis`, a `geom GEOGRAPHY(Point, 4326)` column
+--         on `work`, a GIST index over it, and a BEFORE INSERT/UPDATE trigger
+--         populating it from latitude/longitude.
+--
+--         Existing databases built from REV 3 must run
+--         migrations/001_drop_orphan_geom_trigger.sql to clear the trigger.
+--
 -- REV 3 — revised against the real master dataset delivered by the team
 --         (principal_master_works.json / _payments.json / _mp_summary.json,
 --          111,525 / 12,040 / 776 rows, verified 2026-09-09).
@@ -54,8 +73,6 @@ SELECT 'CREATE DATABASE mplads'
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mplads')\gexec
 
 \c mplads
-
-CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- ---------------------------------------------------------------------
 -- Provenance: every load (scrape run, manual XLS/CSV import, or the
@@ -152,7 +169,6 @@ CREATE TABLE IF NOT EXISTS work (
     village_or_ward         TEXT,
     latitude                DOUBLE PRECISION,
     longitude               DOUBLE PRECISION,
-    geom                    GEOGRAPHY(Point, 4326),  -- populated from latitude/longitude via trigger below
 
     work_description        TEXT,
     work_category           TEXT,
@@ -225,22 +241,6 @@ CREATE INDEX IF NOT EXISTS idx_work_status ON work(status);
 CREATE INDEX IF NOT EXISTS idx_work_data_source ON work(data_source);
 CREATE INDEX IF NOT EXISTS idx_work_severity ON work(ground_truth_severity);
 CREATE INDEX IF NOT EXISTS idx_work_synthetic ON work(synthetic_record);
-CREATE INDEX IF NOT EXISTS idx_work_geom ON work USING GIST(geom);
-
--- keep geom in sync with lat/lon whenever a row is inserted or updated
-CREATE OR REPLACE FUNCTION work_set_geom() RETURNS trigger AS $$
-BEGIN
-    IF NEW.latitude IS NOT NULL AND NEW.longitude IS NOT NULL THEN
-        NEW.geom := ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326)::geography;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_work_set_geom ON work;
-CREATE TRIGGER trg_work_set_geom
-BEFORE INSERT OR UPDATE ON work
-FOR EACH ROW EXECUTE FUNCTION work_set_geom();
 
 -- Multi-valued ground-truth anomaly labels for works, one row per label
 -- (split from work.ground_truth_anomaly_raw on '|' at load time). 11

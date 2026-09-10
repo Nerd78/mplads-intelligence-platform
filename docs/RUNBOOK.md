@@ -31,7 +31,7 @@ DATABASE_URL=postgresql://postgres:My%40Pass@localhost:5432/mplads
 
 `backend/.env` is gitignored and must stay that way.
 
-## 2. Database schema (without PostGIS)
+## 2. Database schema
 
 ```bash
 psql -U postgres -h localhost -f schema.sql
@@ -39,30 +39,23 @@ psql -U postgres -h localhost -f schema.sql
 
 `schema.sql` is idempotent, so re-running it is safe.
 
-**PostGIS is optional and skipped in this setup.** Without the extension the
-script reports two errors and continues:
+**PostGIS is not required.** As of REV 5 the schema has no `geom` column, no
+GIST index and no sync trigger — `latitude`/`longitude` stay as plain columns,
+the geo API routes aggregate by state name, and geo-anomaly detection runs in
+the Python layer. Verified on a clean database: all 13 tables create and
+`INSERT INTO work` succeeds with zero triggers present.
 
-```
-ERROR:  extension "postgis" is not available
-ERROR:  column "geom" does not exist
-```
-
-Both are expected. `work.geom` and its GIST index simply don't get created.
-There is one catch worth knowing:
-
-> The `trg_work_set_geom` trigger **is still created**, even though the `geom`
-> column it writes to is not. Left in place it makes *every* insert into `work`
-> fail. Drop it once, after applying the schema:
+> **Upgrading a database built from REV 3?** REV 3 required PostGIS. Where the
+> extension was missing, the `geom` column was never created but the
+> `trg_work_set_geom` trigger **was** (plpgsql bodies aren't validated at
+> creation), leaving a table that rejected every insert. Clear it once:
 >
 > ```bash
 > psql -U postgres -d mplads -f migrations/001_drop_orphan_geom_trigger.sql
 > ```
 
-Nothing else depends on it: the geo API routes aggregate by state name, and
-geo-anomaly detection runs in the Python layer off plain `latitude`/`longitude`
-— the same tradeoff already documented in [LOCAL_DEV_SETUP.md](LOCAL_DEV_SETUP.md)
-for the SQLite variant. Install PostGIS and re-run `schema.sql` if DB-side
-spatial queries are ever needed.
+To add PostGIS back on a host that supports it, `schema.sql`'s REV 5 header
+lists exactly what to restore.
 
 ## 3. Load the master dataset
 

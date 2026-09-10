@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Principal Master Mp Summary",
+  "type": "object",
+  "required": [
+    "mp_id",
+    "mp_name",
+    "state",
+    "constituency",
+    "house"
+  ],
+  "properties": {
+    "mp_id": {
+      "type": "string",
+      "description": "Foreign key linking work to standard Member of Parliament identifier.",
+      "example": "141b305d15d2"
+    },
+    "mp_name": {
+      "type": "string",
+      "description": "Full official name of the Member of Parliament.",
+      "example": "BISHNU PADA RAY"
+    },
+    "state": {
+      "type": "string",
+      "description": "State or Union Territory name.",
+      "example": "Andaman And Nicobar Islands"
+    },
+    "constituency": {
+      "type": "string",
+      "description": "Parliamentary constituency name.",
+      "example": "ANDAMAN AND NICOBAR ISLANDS"
+    },
+    "house": {
+      "type": "string",
+      "description": "Parliament house (Lok Sabha or Rajya Sabha).",
+      "example": "Lok Sabha"
+    },
+    "entitlement_amt": {
+      "type": "number",
+      "description": "Total MP allocation limit under MPLAD scheme (INR).",
+      "example": "147000000.0"
+    },
+    "scraped_works_recommended": {
+      "type": "integer",
+      "description": "Total works recommended as reported on web portal.",
+      "example": "29"
+    },
+    "total_works_count": {
+      "type": "integer",
+      "description": "Total count of works under the MP in master dataset.",
+      "example": "35"
+    },
+    "completed_works_count": {
+      "type": "integer",
+      "description": "Total completed works count under the MP.",
+      "example": "5"
+    },
+    "ongoing_works_count": {
+      "type": "integer",
+      "description": "Total ongoing or in-progress works count under the MP.",
+      "example": "3"
+    },
+    "total_recommended_amt": {
+      "type": "number",
+      "description": "Total recommended funds amount under the MP (INR).",
+      "example": "157740702.08"
+    },
+    "total_sanctioned_amt": {
+      "type": "number",
+      "description": "Total sanctioned funds amount under the MP (INR).",
+      "example": "155168715.86"
+    },
+    "total_expenditure_amt": {
+      "type": "number",
+      "description": "Total actual expenditure under the MP (INR).",
+      "example": "95104806.02"
+    },
+    "unutilized_fund_amt": {
+      "type": "number",
+      "description": "Remaining unutilized entitlement funds (INR).",
+      "example": "0.0"
+    },
+    "utilisation_rate_pct": {
+      "type": "number",
+      "description": "Percentage of entitlement sanctioned (0-100%).",
+      "example": "105.56"
+    },
+    "avg_sanction_delay_days": {
+      "type": "number",
+      "description": "Average sanction delay in days across MP works.",
+      "example": "105.7"
+    },
+    "avg_project_duration_days": {
+      "type": "number",
+      "description": "Average project completion duration in days across MP works.",
+      "example": "214.1"
+    },
+    "total_cost_overrun_amt": {
+      "type": "number",
+      "description": "Total cost overrun amount across MP works (INR).",
+      "example": "0.0"
+    },
+    "blacklisted_contractor_works_count": {
+      "type": "integer",
+      "description": "Count of works under MP awarded to blacklisted contractors.",
+      "example": "2"
+    },
+    "blacklisted_contractor_funds_amount": {
+      "type": "number",
+      "description": "Total funds under MP awarded to blacklisted contractors (INR).",
+      "example": "37311138.4"
+    },
+    "has_blacklisted_contractor_flag": {
+      "type": "integer",
+      "description": "Binary alert (1 if MP awarded work/funds to blacklisted contractor).",
+      "example": "1"
+    },
+    "anomaly_works_count": {
+      "type": "integer",
+      "description": "Count of anomalous works under the MP.",
+      "example": "13"
+    },
+    "excess_duration_works_count": {
+      "type": "integer",
+      "description": "Count of works under MP exceeding national duration benchmark.",
+      "example": "9"
+    },
+    "anomaly_works_pct": {
+      "type": "number",
+      "description": "Percentage of works under MP flagged for anomalies.",
+      "example": "37.14"
+    },
+    "composite_risk_score": {
+      "type": "number",
+      "description": "Composite weighted risk rating score (0 to 100).",
+      "example": "51.95"
+    }
+  }
+}

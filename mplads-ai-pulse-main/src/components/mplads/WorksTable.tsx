@@ -94,7 +94,7 @@ export function WorksTable({
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search works, MP, vendor…"
         aria-label="Search works"
-        className="h-8 w-full rounded-md border border-border bg-surface pl-8 pr-8 text-xs text-ink placeholder:text-ink-subtle focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+        className="h-8 w-full [&::-webkit-search-cancel-button]:appearance-none rounded-md border border-border bg-surface pl-8 pr-8 text-xs text-ink placeholder:text-ink-subtle focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
       />
       {query && (
         <button

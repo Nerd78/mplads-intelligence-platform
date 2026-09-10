@@ -44,8 +44,19 @@ reuse the old model.
 
 | File | What it does | Required |
 |---|---|---|
-| `001_drop_orphan_geom_trigger.sql` | Removes the `work.geom` trigger left behind when PostGIS is unavailable | Only without PostGIS |
+| `001_drop_orphan_geom_trigger.sql` | Clears the `work.geom` trigger left behind by schema REV 3 | Only for databases built from REV 3 |
 | `002_verify_detection_v2.sql` | Read-only assertions that the detection v2 re-score is in place | Verification only |
+
+## Schema revisions
+
+`schema.sql` carries its own revision history in the file header.
+
+- **REV 5** — PostGIS dropped entirely. No `geom` column, GIST index or sync
+  trigger; `latitude`/`longitude` stay as plain columns and geo-anomaly
+  detection runs in Python. A fresh database needs no PostGIS package.
+- **REV 3** — required PostGIS. Where the extension was missing the geom
+  column silently failed to create while its trigger succeeded, leaving a
+  `work` table that rejected every insert. `001` clears that.
 
 ## Conventions
 

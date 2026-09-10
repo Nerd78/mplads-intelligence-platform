@@ -1,12 +1,15 @@
+import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { RiskDistributionChart } from "@/components/mplads/charts";
 import { HouseComparison } from "@/components/mplads/HouseComparison";
 import { Panel, PanelHeader, PageHeader } from "@/components/mplads/Panel";
 import { SeverityBadge } from "@/components/mplads/SeverityBadge";
+import { SortableHead, TableSearch, useSort, useSortedRows } from "@/components/mplads/SortableTable";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ErrorState, TableSkeleton } from "@/components/mplads/StateViews";
 import { useGeoStates, useStatsOverview } from "@/lib/hooks";
+import type { GeoStateAgg } from "@/lib/api";
 import { formatAnomalyLabel, formatNumber } from "@/lib/mplads-data";
 
 export const Route = createFileRoute("/national-intelligence")({
@@ -21,14 +24,46 @@ function severityFor(score: number) {
   return "Low" as const;
 }
 
+// Registered outside the component so the sort memo has a stable dependency.
+const STATE_ACCESSORS = {
+  state: (s: GeoStateAgg) => s.state,
+  score: (s: GeoStateAgg) => s.avg_composite_score,
+  works: (s: GeoStateAgg) => s.work_count,
+  critical: (s: GeoStateAgg) => s.critical_count,
+  high: (s: GeoStateAgg) => s.high_count,
+  signal: (s: GeoStateAgg) => (s.top_anomaly_label ? formatAnomalyLabel(s.top_anomaly_label) : null),
+};
+
 function NationalIntelligence() {
   const navigate = useNavigate();
+  const [stateQuery, setStateQuery] = useState("");
+  const { sort, toggle } = useSort();
   const { data: overview, isLoading, isError, error, refetch } = useStatsOverview();
   const { data: states, isLoading: statesLoading } = useGeoStates();
 
+  // Natural order = the page's premise: worst average risk first. Sorting is
+  // layered on top of it, and clearing the sort returns to exactly this.
+  const rankedStates = useMemo(
+    () => [...(states ?? [])].sort((a, b) => b.avg_composite_score - a.avg_composite_score),
+    [states],
+  );
+
+  const searchedStates = useMemo(() => {
+    const q = stateQuery.trim().toLowerCase();
+    if (!q) return rankedStates;
+    return rankedStates.filter(
+      (s) =>
+        s.state.toLowerCase().includes(q) ||
+        (s.top_anomaly_label ? formatAnomalyLabel(s.top_anomaly_label).toLowerCase().includes(q) : false),
+    );
+  }, [rankedStates, stateQuery]);
+
+  const visibleStates = useSortedRows(searchedStates, sort, STATE_ACCESSORS);
+
+  // Placed after every hook: an early return above useMemo/useSortedRows
+  // would change the hook call order between renders.
   if (isError) return <ErrorState message={(error as Error)?.message} onRetry={refetch} />;
 
-  const sortedStates = [...(states ?? [])].sort((a, b) => b.avg_composite_score - a.avg_composite_score);
   const anomalyRows = Object.entries(overview?.anomaly_type_counts ?? {})
     .filter(([label]) => label !== "NORMAL")
     .sort((a, b) => b[1] - a[1]);
@@ -88,26 +123,46 @@ function NationalIntelligence() {
       </div>
 
       <Panel>
-        <PanelHeader title="All states, ranked by average risk" description="Select a state to open its intelligence view." />
+        <PanelHeader
+          title="All states, ranked by average risk"
+          description="Select a state to open its intelligence view. Column headers cycle ascending, descending, then back to the risk ranking."
+        />
         {statesLoading ? (
           <div className="p-4">
             <TableSkeleton rows={10} cols={5} />
           </div>
         ) : (
-          <div className="max-h-[520px] overflow-auto">
+          <>
+            <div className="border-b border-border px-4 py-2.5">
+              <TableSearch
+                value={stateQuery}
+                onChange={setStateQuery}
+                placeholder="Search states or signals…"
+                count={visibleStates.length}
+                noun={visibleStates.length === 1 ? "state" : "states"}
+              />
+            </div>
+            <div className="max-h-[520px] overflow-auto">
             <Table>
               <TableHeader className="sticky top-0 z-10 bg-surface-sunken">
                 <TableRow>
-                  <TableHead>State</TableHead>
-                  <TableHead>Severity</TableHead>
-                  <TableHead className="text-right">Works</TableHead>
-                  <TableHead className="text-right">Critical</TableHead>
-                  <TableHead className="text-right">High</TableHead>
-                  <TableHead>Top signal</TableHead>
+                  <SortableHead label="State" sortKey="state" sort={sort} onToggle={toggle} />
+                  <SortableHead label="Severity" sortKey="score" sort={sort} onToggle={toggle} />
+                  <SortableHead label="Works" sortKey="works" sort={sort} onToggle={toggle} align="right" />
+                  <SortableHead label="Critical" sortKey="critical" sort={sort} onToggle={toggle} align="right" />
+                  <SortableHead label="High" sortKey="high" sort={sort} onToggle={toggle} align="right" />
+                  <SortableHead label="Top signal" sortKey="signal" sort={sort} onToggle={toggle} />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedStates.map((s) => (
+                {visibleStates.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-6 text-center text-xs text-ink-muted">
+                      No states match “{stateQuery}”.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {visibleStates.map((s) => (
                   <TableRow
                     key={s.state}
                     className="cursor-pointer"
@@ -127,7 +182,8 @@ function NationalIntelligence() {
                 ))}
               </TableBody>
             </Table>
-          </div>
+            </div>
+          </>
         )}
       </Panel>
     </div>
