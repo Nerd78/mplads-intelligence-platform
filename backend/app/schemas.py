@@ -195,6 +195,21 @@ class EvaluationRow(BaseModel):
     f1: float
 
 
+class HouseStats(BaseModel):
+    """Per-house rollup. Lok Sabha members hold a constituency, Rajya Sabha
+    members represent a state, and their MPLADS work volumes differ by orders
+    of magnitude -- so national averages that pool both are misleading."""
+
+    house: str
+    mp_count: int
+    works_scored: int
+    total_sanctioned: float
+    total_expenditure: float
+    avg_composite_score: Optional[float] = None
+    critical_count: int
+    high_count: int
+
+
 class EvaluationReport(BaseModel):
     model_version: Optional[str] = None
     synthetic_count: int

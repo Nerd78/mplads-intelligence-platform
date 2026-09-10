@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/mplads/StateViews";
 import { useStatsState } from "@/lib/hooks";
-import { formatCurrency, formatNumber } from "@/lib/mplads-data";
+import { formatCurrency, formatDistrict, formatNumber } from "@/lib/mplads-data";
 import type { Loose } from "@/lib/types";
 
 type Search = Loose<{ state: string; offset: number }>;
@@ -86,7 +86,7 @@ function StateIntelligence() {
                             className="cursor-pointer"
                             onClick={() => navigate({ to: "/district-intelligence", search: { state, district: d.district } })}
                           >
-                            <TableCell className="text-xs font-medium">{d.district}</TableCell>
+                            <TableCell className="text-xs font-medium text-ink">{formatDistrict(d.district)}</TableCell>
                             <TableCell className="text-right text-xs tabular-nums">{formatNumber(d.work_count)}</TableCell>
                             <TableCell className="text-right text-xs tabular-nums">{d.avg_composite_score.toFixed(0)}</TableCell>
                             <TableCell className="text-right text-xs tabular-nums">{d.critical_count}</TableCell>

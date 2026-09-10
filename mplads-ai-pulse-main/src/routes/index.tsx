@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AlertOctagon, Banknote, FlaskConical, IndianRupee, Layers, Siren } from "lucide-react";
+import { AlertOctagon, IndianRupee, Landmark, Layers, PiggyBank, Siren } from "lucide-react";
 
 import { KpiCard } from "@/components/mplads/KpiCard";
 import { Panel, PanelHeader, PageHeader } from "@/components/mplads/Panel";
@@ -9,7 +9,7 @@ import { SeverityBadge } from "@/components/mplads/SeverityBadge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState } from "@/components/mplads/StateViews";
 import { useAlerts, useStatsOverview } from "@/lib/hooks";
-import { formatCurrency, formatNumber } from "@/lib/mplads-data";
+import { formatCurrency, formatNumber, formatPercent } from "@/lib/mplads-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Command Center — MPLADS Intelligence" }] }),
@@ -24,6 +24,8 @@ function CommandCenter() {
   if (isError) return <ErrorState message={(error as Error)?.message} onRetry={refetch} />;
 
   const totalWorks = overview?.total_works;
+  const sanctioned = overview?.total_sanctioned ?? 0;
+  const utilisation = sanctioned > 0 ? ((overview?.total_expenditure ?? 0) / sanctioned) * 100 : null;
 
   return (
     <div className="space-y-5">
@@ -34,14 +36,30 @@ function CommandCenter() {
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-        <KpiCard label="Total works" value={formatNumber(totalWorks)} icon={Layers} loading={isLoading} />
+        <KpiCard label="Total works" value={formatNumber(totalWorks)} icon={Layers} loading={isLoading} footnote="sanctioned under MPLADS" />
         <KpiCard
-          label="Expenditure"
+          label="Sanctioned"
+          value={formatCurrency(overview?.total_sanctioned)}
+          icon={Landmark}
+          loading={isLoading}
+          footnote="funds allocated"
+          explanation="Total sanctioned cost across every loaded work — the funds committed by government for this scope of work."
+        />
+        <KpiCard
+          label="Spent"
           value={formatCurrency(overview?.total_expenditure)}
           icon={IndianRupee}
           loading={isLoading}
-          footnote="recorded across all works"
+          footnote="expenditure recorded"
           explanation="Sum of recorded expenditure across every loaded work."
+        />
+        <KpiCard
+          label="Utilisation"
+          value={utilisation === null ? "—" : formatPercent(utilisation, 1)}
+          icon={PiggyBank}
+          loading={isLoading}
+          footnote="of sanctioned funds spent"
+          explanation="Recorded expenditure as a share of sanctioned cost. A low rate means committed money has not reached the ground."
         />
         <KpiCard
           label="Critical"
@@ -58,15 +76,6 @@ function CommandCenter() {
           tone="warning"
           loading={isLoading}
           footnote="score 61–80"
-        />
-        <KpiCard label="Real records" value={formatNumber(overview?.real_count)} icon={Banknote} loading={isLoading} footnote="from eSAKSHI" />
-        <KpiCard
-          label="Synthetic"
-          value={formatNumber(overview?.synthetic_count)}
-          icon={FlaskConical}
-          loading={isLoading}
-          footnote="labeled benchmark"
-          explanation="Records with injected, independently-labeled fraud scenarios used to validate the detection engine."
         />
       </div>
 

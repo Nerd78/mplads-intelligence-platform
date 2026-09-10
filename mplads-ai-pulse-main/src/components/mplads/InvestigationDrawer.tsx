@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { SeverityBadge } from "./SeverityBadge";
 import { DataSourceBadge } from "./DataSourceBadge";
 import { CardSkeleton, ErrorState } from "./StateViews";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/mplads-data";
+import { formatCurrency, formatDate, formatDistrict, formatPercent } from "@/lib/mplads-data";
 import { useWorkDetail } from "@/lib/hooks";
 
 export function InvestigationDrawer({
@@ -43,7 +43,7 @@ export function InvestigationDrawer({
               </div>
               <SheetTitle className="text-base leading-snug">{work.work_description || work.work_id}</SheetTitle>
               <p className="text-xs text-muted-foreground">
-                {work.work_id} · {work.mp_name ?? "Unknown MP"} · {work.district ?? "—"}, {work.state ?? "—"}
+                {work.work_id} · {work.mp_name ?? "Unknown MP"} · {formatDistrict(work.district)}, {work.state ?? "—"}
               </p>
               <Button
                 size="sm"

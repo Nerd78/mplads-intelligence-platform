@@ -43,6 +43,8 @@ def list_works(
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
     search: Optional[str] = None,
+    flag: Optional[str] = Query(None, description="anomaly flag_label, e.g. DUPLICATE_WORK"),
+    mp_name: Optional[str] = Query(None, description="partial MP name match"),
     sort: Optional[str] = Query(None, description="e.g. composite_score or -sanction_date"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
@@ -58,6 +60,8 @@ def list_works(
         date_from=date_from,
         date_to=date_to,
         search=search,
+        flag=flag,
+        mp_name=mp_name,
     )
     order_sql = sort_clause(sort)
     params["limit"] = limit

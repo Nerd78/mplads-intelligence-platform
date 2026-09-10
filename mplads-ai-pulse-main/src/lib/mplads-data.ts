@@ -100,6 +100,20 @@ export function formatAnomalyLabel(code: string): string {
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
+/**
+ * Synthetic benchmark rows carry fabricated district names ("District_5") —
+ * verified: all 3,958 synthetic works use them and no real work does. They
+ * are not places, so they render as "—" rather than sitting in a column
+ * beside real districts looking like administrative units. The row's source
+ * badge already says the record is synthetic.
+ */
+const PLACEHOLDER_DISTRICT = /^District_\d+$/;
+
+export function formatDistrict(district: string | null | undefined): string {
+  if (!district || PLACEHOLDER_DISTRICT.test(district)) return "—";
+  return district;
+}
+
 /** Compact figures for chart axes and bar-end labels: 35045 -> "35k". */
 export function formatCompactNumber(value: number): string {
   if (Math.abs(value) >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;

@@ -30,6 +30,7 @@ _LIST_SQL_BASE = """
 @router.get("", response_model=Page[Mp])
 def list_mps(
     state: Optional[str] = None,
+    house: Optional[str] = Query(None, description="Lok Sabha or Rajya Sabha"),
     search: Optional[str] = None,
     sort: Optional[str] = Query(None, description="risk (default) or name"),
     limit: int = Query(50, ge=1, le=200),
@@ -40,6 +41,9 @@ def list_mps(
     if state:
         clauses.append("state = %(state)s")
         params["state"] = state
+    if house:
+        clauses.append("house = %(house)s")
+        params["house"] = house
     if search:
         clauses.append("(name ILIKE %(search)s OR constituency ILIKE %(search)s)")
         params["search"] = f"%{search}%"

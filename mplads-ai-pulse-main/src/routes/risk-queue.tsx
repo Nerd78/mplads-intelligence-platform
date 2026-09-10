@@ -9,7 +9,7 @@ import { SeverityBadge } from "@/components/mplads/SeverityBadge";
 import { DataSourceBadge } from "@/components/mplads/DataSourceBadge";
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/mplads/StateViews";
 import { useAlerts } from "@/lib/hooks";
-import { formatCurrency } from "@/lib/mplads-data";
+import { formatCurrency, formatDistrict } from "@/lib/mplads-data";
 import type { Loose } from "@/lib/types";
 
 type Search = Loose<{ severity: string; state: string; district: string; data_source: string; offset: number }>;
@@ -93,7 +93,7 @@ function RiskQueue() {
                   <div className="flex flex-wrap items-center gap-2 pb-3">
                     <DataSourceBadge dataSource={item.data_source} />
                     <span className="text-xs text-muted-foreground">
-                      {item.mp_name ?? "Unknown MP"} · {item.district ?? "—"}, {item.state ?? "—"}
+                      {item.mp_name ?? "Unknown MP"} · {formatDistrict(item.district)}, {item.state ?? "—"}
                     </span>
                     <Button
                       size="sm"

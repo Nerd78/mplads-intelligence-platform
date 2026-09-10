@@ -6,8 +6,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { SeverityBadge } from "./SeverityBadge";
 import { DataSourceBadge } from "./DataSourceBadge";
+import { AnomalySelect, CategorySelect, SeveritySelect } from "./filters";
 import { EmptyState, ErrorState, TableSkeleton } from "./StateViews";
-import { formatAnomalyLabel, formatCurrency, formatPercent } from "@/lib/mplads-data";
+import { formatAnomalyLabel, formatCurrency, formatDistrict, formatPercent } from "@/lib/mplads-data";
 import { useWorks } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 import type { WorksFilters } from "@/lib/api";
@@ -21,7 +22,8 @@ interface WorksTableProps {
   searchable?: boolean | undefined;
 }
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+const DEFAULT_PAGE_SIZE = 50;
 
 function useDebounced<T>(value: T, delay = 300): T {
   const [debounced, setDebounced] = useState(value);
@@ -41,26 +43,46 @@ export function WorksTable({
 }: WorksTableProps) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [flag, setFlag] = useState<string | undefined>(undefined);
+  const [severity, setSeverity] = useState<string | undefined>(undefined);
+  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const debouncedQuery = useDebounced(query);
 
-  // A new query has to start from page 1 -- keeping the old offset can land
-  // the user past the end of a smaller result set and show an empty table.
+  const activeCount = [debouncedQuery, flag, severity, category].filter(Boolean).length;
+
+  // Any filter change has to start from page 1 -- keeping the old offset can
+  // land the user past the end of a smaller result set and show an empty table.
   useEffect(() => {
-    if (debouncedQuery !== "") onPageChange(0);
+    onPageChange(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery]);
+  }, [debouncedQuery, flag, severity, category, pageSize]);
+
+  const clearAll = () => {
+    setQuery("");
+    setFlag(undefined);
+    setSeverity(undefined);
+    setCategory(undefined);
+  };
 
   const merged = useMemo<WorksFilters>(
-    () => ({ limit: PAGE_SIZE, ...filters, ...(debouncedQuery ? { search: debouncedQuery } : {}) }),
-    [filters, debouncedQuery],
+    () => ({
+      limit: pageSize,
+      ...filters,
+      ...(debouncedQuery ? { search: debouncedQuery } : {}),
+      ...(flag ? { flag } : {}),
+      ...(severity ? { severity } : {}),
+      ...(category ? { work_category: category } : {}),
+    }),
+    [filters, debouncedQuery, flag, severity, category],
   );
 
   const { data, isLoading, isError, error, refetch, isFetching } = useWorks(merged);
 
   const offset = filters.offset ?? 0;
   const total = data?.total ?? 0;
-  const page = Math.floor(offset / PAGE_SIZE) + 1;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const page = Math.floor(offset / pageSize) + 1;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const sortDesc = filters.sort !== "composite_score";
 
   const searchBar = searchable ? (
@@ -146,7 +168,7 @@ export function WorksTable({
                 <TableCell className="max-w-[160px] truncate text-xs text-ink">{w.mp_name ?? "—"}</TableCell>
                 <TableCell className="text-xs text-ink">
                   <div>{w.state ?? "—"}</div>
-                  <div className="text-[11px] text-ink-subtle">{w.district ?? "—"}</div>
+                  <div className="text-[11px] text-ink-subtle">{formatDistrict(w.district)}</div>
                 </TableCell>
                 <TableCell className="max-w-[170px] text-xs text-ink-muted">
                   {w.top_flag ? formatAnomalyLabel(w.top_flag) : "—"}
@@ -168,25 +190,57 @@ export function WorksTable({
   return (
     <div className="space-y-2.5">
       {searchable && (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {searchBar}
-          {!isLoading && !isError && (
-            <span className="text-xs text-ink-muted tnum">
-              {total.toLocaleString("en-IN")} {total === 1 ? "work" : "works"}
-              {debouncedQuery && " matched"}
-            </span>
-          )}
+        <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface-sunken p-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            {searchBar}
+            <AnomalySelect value={flag} onChange={setFlag} />
+            <SeveritySelect value={severity} onChange={setSeverity} />
+            <CategorySelect value={category} onChange={setCategory} />
+            {activeCount > 0 && (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="flex items-center gap-1 rounded-md border border-border-strong bg-surface px-2 py-1 text-[11px] font-medium text-ink-muted transition-colors hover:border-blue-300 hover:text-blue-800"
+              >
+                <X className="h-3 w-3" />
+                Clear {activeCount}
+              </button>
+            )}
+            {!isLoading && !isError && (
+              <span className="ml-auto text-xs text-ink-muted tnum">
+                {total.toLocaleString("en-IN")} {total === 1 ? "work" : "works"}
+                {activeCount > 0 && " matched"}
+              </span>
+            )}
+          </div>
         </div>
       )}
 
       {body()}
 
       {!isLoading && !isError && total > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-muted">
-          <span className="tnum">
-            Showing {(offset + 1).toLocaleString("en-IN")}–{Math.min(offset + PAGE_SIZE, total).toLocaleString("en-IN")} of{" "}
-            {total.toLocaleString("en-IN")}
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-ink-muted">
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-1.5">
+              <span>Rows</span>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                aria-label="Rows per page"
+                className="h-7 rounded-md border border-border bg-surface px-1.5 text-xs text-ink focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              >
+                {PAGE_SIZE_OPTIONS.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span className="tnum">
+              Showing {(offset + 1).toLocaleString("en-IN")}–{Math.min(offset + pageSize, total).toLocaleString("en-IN")} of{" "}
+              {total.toLocaleString("en-IN")}
+            </span>
+          </div>
           <div className="flex items-center gap-1.5">
             <Button
               size="icon"
@@ -194,7 +248,7 @@ export function WorksTable({
               className="h-7 w-7"
               aria-label="Previous page"
               disabled={offset === 0}
-              onClick={() => onPageChange(Math.max(0, offset - PAGE_SIZE))}
+              onClick={() => onPageChange(Math.max(0, offset - pageSize))}
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </Button>
@@ -206,8 +260,8 @@ export function WorksTable({
               variant="outline"
               className="h-7 w-7"
               aria-label="Next page"
-              disabled={offset + PAGE_SIZE >= total}
-              onClick={() => onPageChange(offset + PAGE_SIZE)}
+              disabled={offset + pageSize >= total}
+              onClick={() => onPageChange(offset + pageSize)}
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </Button>

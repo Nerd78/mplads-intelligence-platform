@@ -7,7 +7,16 @@ from fastapi import APIRouter, HTTPException
 
 from ..db import get_cursor
 from ..geo_names import canonicalize
-from ..schemas import EvaluationReport, GeoStateAgg, Mp, SeverityBreakdown, StatsDistrict, StatsOverview, StatsState
+from ..schemas import (
+    EvaluationReport,
+    GeoStateAgg,
+    HouseStats,
+    Mp,
+    SeverityBreakdown,
+    StatsDistrict,
+    StatsOverview,
+    StatsState,
+)
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
@@ -123,6 +132,14 @@ def stats_state(state: str):
                    COUNT(*) FILTER (WHERE wrs.severity = 'Critical') AS critical_count
             FROM work w LEFT JOIN work_risk_score wrs ON wrs.work_id = w.work_id
             WHERE w.state = %(state)s AND w.district IS NOT NULL AND w.district != ''
+              -- The synthetic benchmark ships fabricated district names
+              -- ("District_5", "District_36", ...) -- verified: all 3,958
+              -- synthetic rows use them and no real row does. They are not
+              -- places, so they must not appear in a geographic ranking
+              -- beside real districts, where they read as real administrative
+              -- units. Synthetic rows still count everywhere else (severity
+              -- totals, model evaluation) -- only geography excludes them.
+              AND w.district !~ '^District_[0-9]+$'
             GROUP BY w.district
             ORDER BY avg_score DESC NULLS LAST
             """,
@@ -186,6 +203,50 @@ def stats_district(district: str, state: str):
         severity_breakdown=severity,
         mps=mps,
     )
+
+
+@router.get("/houses", response_model=list[HouseStats])
+def stats_houses():
+    """Lok Sabha vs Rajya Sabha rollup.
+
+    Kept as its own endpoint rather than a filter on /stats/overview because
+    the two houses are not comparable on totals -- Rajya Sabha members carry a
+    fraction of the work volume -- so the useful read is always side by side.
+    """
+    sql = """
+        SELECT
+            m.house AS house,
+            COUNT(DISTINCT m.mp_id) AS mp_count,
+            COUNT(r.work_id) AS works_scored,
+            COALESCE(SUM(w.sanctioned_amount), 0) AS total_sanctioned,
+            COALESCE(SUM(w.expenditure), 0) AS total_expenditure,
+            AVG(r.composite_score) AS avg_composite_score,
+            COUNT(*) FILTER (WHERE r.severity = 'Critical') AS critical_count,
+            COUNT(*) FILTER (WHERE r.severity = 'High') AS high_count
+        FROM mp m
+        LEFT JOIN work w ON w.mp_id = m.mp_id
+        LEFT JOIN work_risk_score r ON r.work_id = w.work_id
+        WHERE m.house IS NOT NULL
+        GROUP BY m.house
+        ORDER BY works_scored DESC
+    """
+    with get_cursor() as cur:
+        cur.execute(sql)
+        rows = cur.fetchall()
+
+    return [
+        HouseStats(
+            house=r["house"],
+            mp_count=r["mp_count"],
+            works_scored=r["works_scored"],
+            total_sanctioned=float(r["total_sanctioned"] or 0),
+            total_expenditure=float(r["total_expenditure"] or 0),
+            avg_composite_score=float(r["avg_composite_score"]) if r["avg_composite_score"] is not None else None,
+            critical_count=r["critical_count"],
+            high_count=r["high_count"],
+        )
+        for r in rows
+    ]
 
 
 @router.get("/evaluation", response_model=EvaluationReport)

@@ -10,7 +10,7 @@ import { SeverityBadge } from "@/components/mplads/SeverityBadge";
 import { DataSourceBadge } from "@/components/mplads/DataSourceBadge";
 import { EmptyState, ErrorState, CardSkeleton } from "@/components/mplads/StateViews";
 import { useWorkDetail } from "@/lib/hooks";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/mplads-data";
+import { formatCurrency, formatDate, formatDistrict, formatPercent } from "@/lib/mplads-data";
 import type { Loose } from "@/lib/types";
 
 type Search = Loose<{ work_id: string }>;
@@ -59,7 +59,7 @@ function ProjectInvestigation() {
           </div>
           <h2 className="max-w-2xl text-lg font-semibold leading-snug text-foreground">{work.work_description || "Untitled work"}</h2>
           <p className="text-sm text-muted-foreground">
-            {work.mp_name ?? "Unknown MP"} · {work.constituency ?? "—"} · {work.district ?? "—"}, {work.state ?? "—"}
+            {work.mp_name ?? "Unknown MP"} · {work.constituency ?? "—"} · {formatDistrict(work.district)}, {work.state ?? "—"}
           </p>
         </div>
         <div className="text-right">

@@ -46,10 +46,13 @@ export function KpiCard({
   const styles = toneStyles[tone];
 
   return (
-    <div className="relative flex min-h-[104px] flex-col justify-between overflow-hidden rounded-xl border border-border bg-surface p-4">
+    // Fixed row heights, not justify-between: the value and footnote sit on
+    // the same baseline in every card, so a card without a footnote no longer
+    // drops its number below the rest of the row.
+    <div className="relative flex flex-col gap-2 overflow-hidden rounded-xl border border-border bg-surface p-4">
       <span className={cn("absolute inset-x-0 top-0 h-0.5", styles.rule)} aria-hidden="true" />
 
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex h-7 items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5">
           <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-ink-muted">{label}</span>
           {explanation && (
@@ -74,25 +77,30 @@ export function KpiCard({
         )}
       </div>
 
-      <div className="mt-2">
+      <div className="flex h-8 items-end">
         {loading ? (
-          <Skeleton className="h-8 w-28" />
+          <Skeleton className="h-7 w-28" />
         ) : (
           <span className="block truncate text-[26px] font-semibold leading-none tracking-tight text-ink tnum">
             {value}
           </span>
         )}
-        {footnote && !loading && <p className="mt-1.5 truncate text-[11px] text-ink-subtle">{footnote}</p>}
-        {trend && !loading && (
-          <div
+      </div>
+
+      {/* Always rendered, even when empty, to hold the row's bottom edge. */}
+      <div className="flex h-4 items-center">
+        {!loading && trend ? (
+          <span
             className={cn(
-              "mt-1.5 flex items-center gap-1 text-[11px] font-medium",
+              "flex items-center gap-1 text-[11px] font-medium",
               trend.direction === "up" ? "text-sev-high" : "text-sev-low",
             )}
           >
             {trend.direction === "up" ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
             {trend.value}
-          </div>
+          </span>
+        ) : (
+          !loading && <p className="truncate text-[11px] text-ink-subtle">{footnote ?? " "}</p>
         )}
       </div>
     </div>

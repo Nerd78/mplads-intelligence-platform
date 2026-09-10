@@ -3,7 +3,8 @@ import { Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useGeoStates } from "@/lib/hooks";
+import { useGeoStates, useStatsOverview } from "@/lib/hooks";
+import { formatAnomalyLabel } from "@/lib/mplads-data";
 
 export function FilterBar({ children }: { children: React.ReactNode }) {
   return <div className="flex flex-wrap items-center gap-2">{children}</div>;
@@ -110,6 +111,35 @@ export function CategorySelect({ value, onChange }: { value?: string | undefined
         {WORK_CATEGORIES.map((c) => (
           <SelectItem key={c} value={c}>
             {c}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+/**
+ * Anomaly flags come from the overview's `anomaly_type_counts` rather than a
+ * hardcoded list, so the options always match what the current detection run
+ * actually produced -- a rule that fires zero times never becomes a filter
+ * that returns nothing.
+ */
+export function AnomalySelect({ value, onChange }: { value?: string | undefined; onChange: (v: string | undefined) => void }) {
+  const { data } = useStatsOverview();
+  const flags = Object.entries(data?.anomaly_type_counts ?? {})
+    .filter(([label]) => label !== "NORMAL")
+    .sort((a, b) => b[1] - a[1]);
+
+  return (
+    <Select value={value ?? ALL} onValueChange={(v) => onChange(v === ALL ? undefined : v)}>
+      <SelectTrigger className="h-8 w-[210px] text-xs">
+        <SelectValue placeholder="All anomaly types" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={ALL}>All anomaly types</SelectItem>
+        {flags.map(([code, count]) => (
+          <SelectItem key={code} value={code}>
+            {formatAnomalyLabel(code)} ({count.toLocaleString("en-IN")})
           </SelectItem>
         ))}
       </SelectContent>
