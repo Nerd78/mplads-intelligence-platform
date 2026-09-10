@@ -84,6 +84,22 @@ shadow-none">`, so padding, border weight and header spacing drifted page to
 page. Use `Panel` + `PanelHeader` + `PanelBody`; use `PageHeader` for the
 route title block.
 
+**All routes are converted.** `@/components/ui/card` is no longer imported by
+any route — if you find yourself reaching for it, use `Panel` instead.
+
+### Who owns the filters
+
+`WorksTable` ships its own toolbar (search, anomaly type, severity, category)
+so any page can drop the table in and get filtering for free. Pages that keep
+their filters in the **URL** — `/works` — pass `searchable={false}` and render
+their own `FilterBar` instead. Otherwise the page shows two competing sets of
+the same controls, which is exactly what happened when the table's toolbar was
+first added.
+
+Rule of thumb: URL-backed filters when a filtered view should be shareable
+(`/works`); the table's built-in toolbar when the filter is a transient
+narrowing inside an already-scoped view (works within one state).
+
 ## 6. Number formatting
 
 - **Currency** is Indian-unit: `₹12,639 Cr`, `₹4.81 L`. `Intl`'s compact
