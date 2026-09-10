@@ -29,6 +29,9 @@ dashboard.
   Intelligence, Risk Queue, Works, Payments, Risk Map, Model Evaluation).
 - **`migrations/`** — ordered, idempotent SQL applied on top of `schema.sql`,
   plus [the procedure to run after pulling](migrations/README.md).
+- **`docs/dataset-schema/`** — the data dictionary and JSON Schema contracts
+  for the three `principal_master_*` files. The datasets themselves are not
+  committed, so this is the spec to build or validate them against.
 - **`docs/`** — [RUNBOOK.md](docs/RUNBOOK.md) (setup, end to end),
   [DETECTION_CHANGELOG.md](docs/DETECTION_CHANGELOG.md) (scoring changes and
   the evidence for them), [UI_DESIGN_SYSTEM.md](docs/UI_DESIGN_SYSTEM.md)
@@ -49,9 +52,9 @@ Full step-by-step instructions, including the failure modes worth knowing
 about, are in **[docs/RUNBOOK.md](docs/RUNBOOK.md)**. The short version:
 
 **Database**: PostgreSQL with `schema.sql` applied (see that file's header for
-setup notes). PostGIS is optional — without it, drop the orphaned
-`trg_work_set_geom` trigger or every insert into `work` fails. The runbook
-covers this.
+setup notes). PostGIS is **not** required as of REV 5. If your database was
+built from REV 3, run `migrations/001_drop_orphan_geom_trigger.sql` once —
+see the runbook.
 
 **Detection engine + API**:
 

@@ -1,0 +1,244 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Principal Master Works",
+  "type": "object",
+  "required": [
+    "work_id",
+    "data_source",
+    "mp_id",
+    "mp_name",
+    "house"
+  ],
+  "properties": {
+    "work_id": {
+      "type": "string",
+      "description": "Unique primary key for each work/project record.",
+      "example": "WRK_REAL_175556"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "Origin of dataset record (WEB_SCRAPED_REAL or SYNTHETIC_BENCHMARK).",
+      "example": "WEB_SCRAPED_REAL"
+    },
+    "mp_id": {
+      "type": "string",
+      "description": "Foreign key linking work to standard Member of Parliament identifier.",
+      "example": "141b305d15d2"
+    },
+    "mp_name": {
+      "type": "string",
+      "description": "Full official name of the Member of Parliament.",
+      "example": "BISHNU PADA RAY"
+    },
+    "house": {
+      "type": "string",
+      "description": "Parliament house (Lok Sabha or Rajya Sabha).",
+      "example": "Lok Sabha"
+    },
+    "state": {
+      "type": "string",
+      "description": "State or Union Territory name.",
+      "example": "Andaman And Nicobar Islands"
+    },
+    "constituency": {
+      "type": "string",
+      "description": "Parliamentary constituency name.",
+      "example": "ANDAMAN AND NICOBAR ISLANDS"
+    },
+    "district": {
+      "type": "string",
+      "description": "District name or Implementing District Authority (IDA).",
+      "example": "SOUTH ANDAMANS"
+    },
+    "block": {
+      "type": "string",
+      "description": "Block or Taluka administrative unit.",
+      "example": ""
+    },
+    "village_or_ward": {
+      "type": "string",
+      "description": "Village or Ward location detail.",
+      "example": ""
+    },
+    "latitude": {
+      "type": "string",
+      "description": "GIS latitude coordinate.",
+      "example": ""
+    },
+    "longitude": {
+      "type": "string",
+      "description": "GIS longitude coordinate.",
+      "example": ""
+    },
+    "work_description": {
+      "type": "string",
+      "description": "Detailed text description of the recommended work.",
+      "example": "Repair and renovation of road from CPWD complex, Ranchi Tikrey Dairyfarm to Fisheries Quarter, Port Blair "
+    },
+    "work_category": {
+      "type": "string",
+      "description": "Standardized category (Road, Drinking Water, School, Health, etc.).",
+      "example": "Repair and Renovation"
+    },
+    "implementing_agency": {
+      "type": "string",
+      "description": "District executing department or authority name.",
+      "example": "SOUTH ANDAMANS(Implementing District Authority(SA))"
+    },
+    "contractor_vendor_id": {
+      "type": "string",
+      "description": "Unique vendor identifier assigned to the contractor.",
+      "example": "Vendor_161"
+    },
+    "contractor_name": {
+      "type": "string",
+      "description": "Full legal display name of the executing contractor.",
+      "example": "M/s Sunrise Infrastructure (Vendor_161)"
+    },
+    "is_contractor_blacklisted": {
+      "type": "integer",
+      "description": "Binary flag (1 if contractor is blacklisted, else 0).",
+      "example": "0"
+    },
+    "blacklisted_reason": {
+      "type": "string",
+      "description": "Specific reason if contractor is blacklisted.",
+      "example": "N/A"
+    },
+    "is_blacklisted_contractor_anomaly": {
+      "type": "integer",
+      "description": "Anomaly flag (1 if work awarded to blacklisted contractor).",
+      "example": "0"
+    },
+    "estimated_cost": {
+      "type": "number",
+      "description": "Initial cost estimate or recommended amount (INR).",
+      "example": "4947034.0"
+    },
+    "sanctioned_amount": {
+      "type": "number",
+      "description": "Official financial sanction amount (INR).",
+      "example": "4947034.0"
+    },
+    "expenditure": {
+      "type": "number",
+      "description": "Total actual expenditure disbursed to date (INR).",
+      "example": "2473517.0"
+    },
+    "physical_progress_percent": {
+      "type": "number",
+      "description": "Percentage of physical work completed (0-100%).",
+      "example": "50.0"
+    },
+    "financial_progress_percent": {
+      "type": "number",
+      "description": "Percentage ratio of expenditure to sanction (0-100%).",
+      "example": "50.0"
+    },
+    "recommendation_date": {
+      "type": "string",
+      "description": "Date MP recommended the work (YYYY-MM-DD).",
+      "example": "2025-02-14"
+    },
+    "sanction_date": {
+      "type": "string",
+      "description": "Date district authority sanctioned the work (YYYY-MM-DD).",
+      "example": "2025-03-24"
+    },
+    "expected_completion_date": {
+      "type": "string",
+      "description": "Target completion date (YYYY-MM-DD).",
+      "example": ""
+    },
+    "actual_completion_date": {
+      "type": "string",
+      "description": "Actual completion date (YYYY-MM-DD).",
+      "example": ""
+    },
+    "status": {
+      "type": "string",
+      "description": "Execution stage status (Completed, Ongoing, Sanctioned).",
+      "example": "Work partially Completed"
+    },
+    "sanction_delay_days": {
+      "type": "integer",
+      "description": "Engineered Feature: Days between recommendation and sanction.",
+      "example": "38"
+    },
+    "completion_delay_days": {
+      "type": "string",
+      "description": "Engineered Feature: Days between expected and actual completion.",
+      "example": ""
+    },
+    "cost_overrun_amount": {
+      "type": "number",
+      "description": "Engineered Feature: Excess expenditure over sanctioned amount (INR).",
+      "example": "0.0"
+    },
+    "cost_overrun_percent": {
+      "type": "number",
+      "description": "Engineered Feature: Percentage cost overrun.",
+      "example": "0.0"
+    },
+    "progress_mismatch_gap": {
+      "type": "number",
+      "description": "Engineered Feature: Absolute gap between financial and physical progress %.",
+      "example": "0.0"
+    },
+    "category_national_avg_duration_days": {
+      "type": "integer",
+      "description": "Benchmark: Standard average completion days for category in India.",
+      "example": "90"
+    },
+    "project_duration_days": {
+      "type": "integer",
+      "description": "Project duration in days from sanction/recommendation to completion.",
+      "example": "210"
+    },
+    "duration_variance_vs_national_avg_days": {
+      "type": "integer",
+      "description": "Engineered Feature: Days variance vs national category average.",
+      "example": "120"
+    },
+    "duration_to_national_avg_ratio": {
+      "type": "number",
+      "description": "Engineered Feature: Ratio of project duration vs national category average.",
+      "example": "2.33"
+    },
+    "is_exceeds_national_avg_duration": {
+      "type": "integer",
+      "description": "Binary flag (1 if project duration exceeds national average).",
+      "example": "1"
+    },
+    "is_excess_duration_anomaly": {
+      "type": "integer",
+      "description": "Anomaly flag (1 if project duration ratio >= 1.5x or excess >= 90 days).",
+      "example": "1"
+    },
+    "letter_no": {
+      "type": "string",
+      "description": "Administrative sanction letter reference number.",
+      "example": "LN/MP18275/2024-2025/1"
+    },
+    "synthetic_record": {
+      "type": "boolean",
+      "description": "Flag indicating if record is synthetically generated (True/False).",
+      "example": "False"
+    },
+    "synthetic_scenario": {
+      "type": "string",
+      "description": "Synthetic scenario pattern applied (NORMAL, COST_OVERRUN, etc.).",
+      "example": "N/A"
+    },
+    "ground_truth_anomaly": {
+      "type": "string",
+      "description": "Categorical anomaly ground-truth label.",
+      "example": "EXCESS_PROJECT_DURATION_VS_NATIONAL_AVG"
+    },
+    "ground_truth_severity": {
+      "type": "string",
+      "description": "Anomaly severity rating (CRITICAL, HIGH, MEDIUM, NORMAL).",
+      "example": "HIGH"
+    }
+  }
+}

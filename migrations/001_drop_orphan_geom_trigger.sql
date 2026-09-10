@@ -1,6 +1,10 @@
--- 001 — Remove the orphaned geom trigger on installs without PostGIS.
+-- 001 — Remove the orphaned geom trigger left behind by REV 3 of schema.sql.
 --
--- schema.sql builds work.geom, its GIST index and a trg_work_set_geom trigger
+-- ONLY needed for a database built from schema.sql REV 3 or earlier. REV 5
+-- dropped PostGIS entirely, so a database created from the current schema
+-- never has this trigger and this migration is a harmless no-op there.
+--
+-- REV 3 built work.geom, its GIST index and a trg_work_set_geom trigger
 -- that keeps geom in sync with latitude/longitude. When PostGIS is not
 -- available, `CREATE EXTENSION postgis` fails and the geom column is never
 -- created — but the trigger and its function ARE, because they are plain

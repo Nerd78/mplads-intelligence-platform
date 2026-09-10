@@ -24,8 +24,6 @@
 -- are meant to be identical from CREATE EXTENSION onward.
 -- ============================================================================
 
-CREATE EXTENSION IF NOT EXISTS postgis;
-
 -- ---------------------------------------------------------------------
 -- Provenance: every load (scrape run, manual XLS/CSV import, or the
 -- teammate's master-dataset export) is one batch.
@@ -121,7 +119,6 @@ CREATE TABLE IF NOT EXISTS work (
     village_or_ward         TEXT,
     latitude                DOUBLE PRECISION,
     longitude               DOUBLE PRECISION,
-    geom                    GEOGRAPHY(Point, 4326),  -- populated from latitude/longitude via trigger below
 
     work_description        TEXT,
     work_category           TEXT,
@@ -194,22 +191,6 @@ CREATE INDEX IF NOT EXISTS idx_work_status ON work(status);
 CREATE INDEX IF NOT EXISTS idx_work_data_source ON work(data_source);
 CREATE INDEX IF NOT EXISTS idx_work_severity ON work(ground_truth_severity);
 CREATE INDEX IF NOT EXISTS idx_work_synthetic ON work(synthetic_record);
-CREATE INDEX IF NOT EXISTS idx_work_geom ON work USING GIST(geom);
-
--- keep geom in sync with lat/lon whenever a row is inserted or updated
-CREATE OR REPLACE FUNCTION work_set_geom() RETURNS trigger AS $$
-BEGIN
-    IF NEW.latitude IS NOT NULL AND NEW.longitude IS NOT NULL THEN
-        NEW.geom := ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326)::geography;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_work_set_geom ON work;
-CREATE TRIGGER trg_work_set_geom
-BEFORE INSERT OR UPDATE ON work
-FOR EACH ROW EXECUTE FUNCTION work_set_geom();
 
 -- Multi-valued ground-truth anomaly labels for works, one row per label
 -- (split from work.ground_truth_anomaly_raw on '|' at load time). 11

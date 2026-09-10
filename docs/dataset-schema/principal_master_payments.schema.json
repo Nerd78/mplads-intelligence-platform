@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Principal Master Payments",
+  "type": "object",
+  "required": [
+    "payment_id",
+    "work_id",
+    "mp_id",
+    "implementing_agency",
+    "payment_date"
+  ],
+  "properties": {
+    "payment_id": {
+      "type": "string",
+      "description": "Unique primary key for payment transaction.",
+      "example": "d549e22f-521b-4edb-af38-83837cfd1e3d"
+    },
+    "work_id": {
+      "type": "string",
+      "description": "Unique primary key for each work/project record.",
+      "example": "e90f4eae-30d0-4411-bf05-08b38bdc9445"
+    },
+    "mp_id": {
+      "type": "string",
+      "description": "Foreign key linking work to standard Member of Parliament identifier.",
+      "example": "575306419c50"
+    },
+    "implementing_agency": {
+      "type": "string",
+      "description": "District executing department or authority name.",
+      "example": "Municipal Corporation"
+    },
+    "payment_date": {
+      "type": "string",
+      "description": "Date payment transaction was disbursed (YYYY-MM-DD).",
+      "example": "2023-08-01"
+    },
+    "payment_amount": {
+      "type": "number",
+      "description": "Monetary amount disbursed in payment transaction (INR).",
+      "example": "5596983.55"
+    },
+    "payment_type": {
+      "type": "string",
+      "description": "Payment transfer mode (Cheque, Bank Transfer, ECS).",
+      "example": "Cheque"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Unique vendor/payee identifier.",
+      "example": "Vendor_45"
+    },
+    "is_vendor_blacklisted": {
+      "type": "integer",
+      "description": "Binary flag (1 if payee vendor is blacklisted).",
+      "example": "0"
+    },
+    "vendor_blacklisted_reason": {
+      "type": "string",
+      "description": "Reason for vendor blacklisting.",
+      "example": "N/A"
+    },
+    "is_blacklisted_vendor_payment_anomaly": {
+      "type": "integer",
+      "description": "Anomaly flag (1 if payment made to blacklisted vendor).",
+      "example": "0"
+    },
+    "synthetic_record": {
+      "type": "boolean",
+      "description": "Flag indicating if record is synthetically generated (True/False).",
+      "example": "True"
+    },
+    "synthetic_scenario": {
+      "type": "string",
+      "description": "Synthetic scenario pattern applied (NORMAL, COST_OVERRUN, etc.).",
+      "example": "NORMAL"
+    },
+    "ground_truth_anomaly": {
+      "type": "string",
+      "description": "Categorical anomaly ground-truth label.",
+      "example": "NORMAL"
+    }
+  }
+}
