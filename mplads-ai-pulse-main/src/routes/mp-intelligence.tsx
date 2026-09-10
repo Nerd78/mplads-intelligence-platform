@@ -7,7 +7,7 @@ import { SearchInput } from "@/components/mplads/filters";
 import { SeverityBadge } from "@/components/mplads/SeverityBadge";
 import { DataSourceBadge } from "@/components/mplads/DataSourceBadge";
 import { ProgressComparisonChart, RiskTrendChart } from "@/components/mplads/charts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Panel, PanelHeader, PageHeader } from "@/components/mplads/Panel";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/mplads/StateViews";
 import { useMpDetail, useMps } from "@/lib/hooks";
@@ -49,13 +49,11 @@ function MpIntelligence() {
   return (
     <div className="space-y-6">
       <Breadcrumbs items={[{ label: "MP Intelligence", to: "/mp-intelligence" }, ...(mp ? [{ label: mp.name }] : [])]} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Analytics</p>
-          <h2 className="text-lg font-semibold text-foreground">MP intelligence</h2>
-        </div>
-        <SearchInput value={q} onChange={setQuery} placeholder="Search MP by name or constituency…" />
-      </div>
+      <PageHeader
+        eyebrow="Analytics"
+        title="MP intelligence"
+        actions={<SearchInput value={q} onChange={setQuery} placeholder="Search MP by name or constituency…" />}
+      />
 
       {!mp_id ? (
         <div className="space-y-2">
@@ -66,7 +64,7 @@ function MpIntelligence() {
               <button
                 key={m.mp_id}
                 onClick={() => pickMp(m.mp_id)}
-                className="flex w-full items-center justify-between rounded-md border border-border bg-card p-3 text-left text-sm hover:bg-accent"
+                className="flex w-full items-center justify-between rounded-lg border border-border bg-surface p-3 text-left text-sm transition-colors hover:border-blue-300 hover:bg-blue-50"
               >
                 <span>
                   <span className="font-medium">{m.name}</span>
@@ -81,17 +79,24 @@ function MpIntelligence() {
         <ErrorState message={(error as Error)?.message} onRetry={refetch} />
       ) : (
         <>
-          <Card className="border-border shadow-none">
-            <CardContent className="flex flex-wrap items-center justify-between gap-4 p-4">
-              <div>
-                <p className="text-base font-semibold text-foreground">{mp?.name ?? "—"}</p>
-                <p className="text-xs text-muted-foreground">
-                  {mp?.constituency ?? "—"} · {mp?.state} · {mp?.house ?? "—"}
-                </p>
+          <Panel>
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4">
+              <div className="min-w-0">
+                <p className="text-base font-semibold text-ink">{mp?.name ?? "—"}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-ink-muted">
+                  <span>{mp?.constituency ?? "—"}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{mp?.state}</span>
+                  {mp?.house && (
+                    <span className="rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-800">
+                      {mp.house}
+                    </span>
+                  )}
+                </div>
               </div>
               <SeverityBadge severity={mp?.aggregate_severity} className="text-sm" />
-            </CardContent>
-          </Card>
+            </div>
+          </Panel>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <KpiCard label="Works" value={formatNumber(mp?.total_works_count ?? mp?.works_scored)} icon={Layers} loading={isLoading} />
@@ -105,19 +110,17 @@ function MpIntelligence() {
             <ProgressComparisonChart data={progressRows} loading={isLoading} />
           </div>
 
-          <Card className="border-border shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Project portfolio — highest risk first</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Panel>
+            <PanelHeader title="Project portfolio — highest risk first" />
+            <div>
               {isLoading ? (
-                <TableSkeleton rows={6} cols={6} />
+                <div className="p-4"><TableSkeleton rows={6} cols={6} /></div>
               ) : flaggedFirst.length === 0 ? (
-                <EmptyState title="No works recorded for this MP" />
+                <div className="p-4"><EmptyState title="No works recorded for this MP" /></div>
               ) : (
-                <div className="max-h-[420px] overflow-y-auto">
+                <div className="max-h-[420px] overflow-auto">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-card">
+                    <TableHeader className="sticky top-0 z-10 bg-surface-sunken">
                       <TableRow>
                         <TableHead>Work</TableHead>
                         <TableHead>Risk</TableHead>
@@ -138,7 +141,7 @@ function MpIntelligence() {
                             <SeverityBadge severity={w.severity} />
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">{w.status ?? "—"}</TableCell>
-                          <TableCell className="text-right text-xs tabular-nums">{formatCurrency(w.expenditure)}</TableCell>
+                          <TableCell className="text-right text-xs text-ink tnum">{formatCurrency(w.expenditure)}</TableCell>
                           <TableCell>
                             <DataSourceBadge dataSource={w.data_source} />
                           </TableCell>
@@ -148,8 +151,8 @@ function MpIntelligence() {
                   </Table>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </Panel>
         </>
       )}
     </div>

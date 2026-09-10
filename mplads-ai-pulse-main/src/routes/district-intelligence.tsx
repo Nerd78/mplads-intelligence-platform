@@ -6,7 +6,7 @@ import { KpiCard } from "@/components/mplads/KpiCard";
 import { DistrictSelect, StateSelect } from "@/components/mplads/filters";
 import { RiskDistributionChart } from "@/components/mplads/charts";
 import { WorksTable } from "@/components/mplads/WorksTable";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Panel, PanelHeader, PageHeader } from "@/components/mplads/Panel";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/mplads/StateViews";
 import { useStatsDistrict, useStatsState } from "@/lib/hooks";
@@ -46,16 +46,16 @@ function DistrictIntelligence() {
           ...(district ? [{ label: district }] : []),
         ]}
       />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Analytics</p>
-          <h2 className="text-lg font-semibold text-foreground">District intelligence</h2>
-        </div>
-        <div className="flex gap-2">
-          <StateSelect value={state} onChange={setState} />
-          <DistrictSelect districts={districtOptions} value={district} onChange={setDistrict} disabled={!state} />
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Analytics"
+        title="District intelligence"
+        actions={
+          <>
+            <StateSelect value={state} onChange={setState} />
+            <DistrictSelect districts={districtOptions} value={district} onChange={setDistrict} disabled={!state} />
+          </>
+        }
+      />
 
       {!state || !district ? (
         <EmptyState title="Pick a state and district" description="Choose both above to see district-level KPIs, MP ranking and works." />
@@ -73,19 +73,17 @@ function DistrictIntelligence() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <RiskDistributionChart data={data?.severity_breakdown} loading={isLoading} />
 
-            <Card className="border-border shadow-none lg:col-span-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">MPs active in this district</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <Panel className="lg:col-span-2">
+              <PanelHeader title="MPs active in this district" />
+              <div>
                 {isLoading ? (
-                  <TableSkeleton rows={5} cols={3} />
+                  <div className="p-4"><TableSkeleton rows={5} cols={3} /></div>
                 ) : !data || data.mps.length === 0 ? (
-                  <EmptyState title="No MPs recorded" />
+                  <div className="p-4"><EmptyState title="No MPs recorded" /></div>
                 ) : (
                   <Table>
                     <TableHeader>
-                      <TableRow>
+                      <TableRow className="bg-surface-sunken">
                         <TableHead>MP</TableHead>
                         <TableHead className="text-right">Works</TableHead>
                         <TableHead className="text-right">Avg score</TableHead>
@@ -94,28 +92,24 @@ function DistrictIntelligence() {
                     <TableBody>
                       {data.mps.map((mp) => (
                         <TableRow key={mp.mp_id} className="cursor-pointer" onClick={() => navigate({ to: "/mp-intelligence", search: { mp_id: mp.mp_id } })}>
-                          <TableCell className="text-xs font-medium">{mp.name}</TableCell>
-                          <TableCell className="text-right text-xs tabular-nums">{formatNumber(mp.work_count)}</TableCell>
-                          <TableCell className="text-right text-xs tabular-nums">{mp.avg_composite_score.toFixed(0)}</TableCell>
+                          <TableCell className="text-xs font-medium text-ink">{mp.name}</TableCell>
+                          <TableCell className="text-right text-xs text-ink tnum">{formatNumber(mp.work_count)}</TableCell>
+                          <TableCell className="text-right text-xs text-ink tnum">{mp.avg_composite_score.toFixed(0)}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </Panel>
           </div>
 
-          <Card className="border-border shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                High-risk works in {district}, {state}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Panel>
+            <PanelHeader title={`High-risk works in ${district}, ${state}`} />
+            <div className="p-3">
               <WorksTable filters={{ state, district, offset }} onPageChange={setOffset} />
-            </CardContent>
-          </Card>
+            </div>
+          </Panel>
         </>
       )}
     </div>

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Cpu, Info } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Panel, PanelHeader, PanelBody, PageHeader } from "@/components/mplads/Panel";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { KpiCard } from "@/components/mplads/KpiCard";
 import { ErrorState, TableSkeleton } from "@/components/mplads/StateViews";
@@ -54,11 +54,11 @@ function ModelEvaluation() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">System</p>
-        <h2 className="text-lg font-semibold text-foreground">Model evaluation</h2>
-        <p className="text-sm text-muted-foreground">How the detection engine performs, measured honestly against the one dataset with genuine independent labels.</p>
-      </div>
+      <PageHeader
+        eyebrow="System"
+        title="Model evaluation"
+        description="How the detection engine performs, measured honestly against the one dataset with genuine independent labels."
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiCard label="Model version" value={data?.model_version ?? "—"} icon={Cpu} loading={isLoading} />
@@ -67,9 +67,8 @@ function ModelEvaluation() {
         <KpiCard label="Overall F1 (benchmark)" value={data?.synthetic_overall.f1.toFixed(3) ?? "—"} loading={isLoading} />
       </div>
 
-      <Card className="border-blue-300 bg-blue-50 shadow-none">
-        <CardContent className="flex gap-3 p-4 text-xs text-foreground">
-          <Info className="h-4 w-4 shrink-0 text-primary" />
+      <div className="flex gap-3 rounded-xl border border-blue-300 bg-blue-50 p-4 text-xs text-ink">
+          <Info className="h-4 w-4 shrink-0 text-blue-700" />
           <p>
             Independent ground truth exists <strong>only</strong> for the SYNTHETIC_BENCHMARK subset ({formatNumber(data?.synthetic_count)} records)
             — 8 fraud scenarios were deliberately injected with known labels. The table below is a genuine precision/recall/F1 evaluation
@@ -77,39 +76,35 @@ function ModelEvaluation() {
             evaluation</strong> — those 3 labels are themselves simple thresholds already computed into the source data, so a match there
             just confirms our rule reproduces the same threshold.
           </p>
-        </CardContent>
-      </Card>
+      </div>
 
-      <Card className="border-border shadow-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Synthetic benchmark — independent evaluation</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Overall (any signal vs. NORMAL): precision {data?.synthetic_overall.precision.toFixed(3)}, recall{" "}
-            {data?.synthetic_overall.recall.toFixed(3)}, F1 {data?.synthetic_overall.f1.toFixed(3)}
-          </p>
-        </CardHeader>
-        <CardContent>{isLoading ? <TableSkeleton rows={8} cols={5} /> : <EvalTable rows={data?.synthetic_rows ?? []} />}</CardContent>
-      </Card>
+      <Panel>
+        <PanelHeader
+          title="Synthetic benchmark — independent evaluation"
+          description={`Overall (any signal vs. NORMAL): precision ${data?.synthetic_overall.precision.toFixed(3)}, recall ${data?.synthetic_overall.recall.toFixed(3)}, F1 ${data?.synthetic_overall.f1.toFixed(3)}`}
+        />
+        <div className="overflow-x-auto">
+          {isLoading ? <div className="p-4"><TableSkeleton rows={8} cols={5} /></div> : <EvalTable rows={data?.synthetic_rows ?? []} />}
+        </div>
+      </Panel>
 
-      <Card className="border-border shadow-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Real records — consistency check, not independent evaluation</CardTitle>
-        </CardHeader>
-        <CardContent>{isLoading ? <TableSkeleton rows={3} cols={5} /> : <EvalTable rows={data?.real_consistency_rows ?? []} />}</CardContent>
-      </Card>
+      <Panel>
+        <PanelHeader title="Real records — consistency check, not independent evaluation" />
+        <div className="overflow-x-auto">
+          {isLoading ? <div className="p-4"><TableSkeleton rows={3} cols={5} /></div> : <EvalTable rows={data?.real_consistency_rows ?? []} />}
+        </div>
+      </Panel>
 
-      <Card className="border-border shadow-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Methodology</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-xs text-muted-foreground">
+      <Panel>
+        <PanelHeader title="Methodology" />
+        <PanelBody className="space-y-2 text-xs text-ink-muted">
           <p>1. A vectorized rule engine checks 10 threshold/pattern rules, one per known anomaly type (blacklisted contractor, cost overrun, duplicate work, agency anomaly, geographic anomaly, and others).</p>
           <p>2. An unsupervised Isolation Forest scores every work on its numeric feature profile alone — it never sees any ground-truth label during training or scoring.</p>
           <p>3. A composite 0–100 score combines both, weighted, and buckets into Low/Medium/High/Critical severity.</p>
           <p>4. Ground truth is used only here, after scoring, to measure performance — never to influence a score.</p>
           <p>Last generated: {formatDate(data?.generated_at)}</p>
-        </CardContent>
-      </Card>
+        </PanelBody>
+      </Panel>
     </div>
   );
 }

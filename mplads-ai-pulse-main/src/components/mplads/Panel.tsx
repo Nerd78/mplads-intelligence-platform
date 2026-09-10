@@ -31,9 +31,9 @@ export function PanelHeader({
   className,
 }: {
   title: ReactNode;
-  description?: ReactNode;
-  actions?: ReactNode;
-  className?: string;
+  description?: ReactNode | undefined;
+  actions?: ReactNode | undefined;
+  className?: string | undefined;
 }) {
   return (
     <div className={cn("flex items-start justify-between gap-3 border-b border-border px-4 py-3", className)}>
@@ -62,8 +62,8 @@ export function PageHeader({
 }: {
   eyebrow: string;
   title: string;
-  description?: string;
-  actions?: ReactNode;
+  description?: string | undefined;
+  actions?: ReactNode | undefined;
 }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">

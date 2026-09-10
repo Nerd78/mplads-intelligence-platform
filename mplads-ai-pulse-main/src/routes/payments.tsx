@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Ban, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { FilterBar, SearchInput } from "@/components/mplads/filters";
+import { Panel, PageHeader } from "@/components/mplads/Panel";
+import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/mplads/StateViews";
@@ -32,17 +34,17 @@ function PaymentsPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Investigations</p>
-        <h2 className="text-lg font-semibold text-foreground">Payments</h2>
-        <p className="text-sm text-muted-foreground">
-          Transaction-level payment ledger. Coverage is synthetic-only in this dataset — real works are tracked via their recorded expenditure, not a per-payment ledger.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Investigations"
+        title="Payments"
+        description="Transaction-level payment ledger. Coverage is synthetic-only in this dataset — real works are tracked via their recorded expenditure, not a per-payment ledger."
+      />
 
-      <FilterBar>
-        <SearchInput value={vendor_id} onChange={(v) => patch({ vendor_id: v })} placeholder="Filter by vendor ID…" />
-      </FilterBar>
+      <Panel className="p-3">
+        <FilterBar>
+          <SearchInput value={vendor_id} onChange={(v) => patch({ vendor_id: v })} placeholder="Filter by vendor ID…" />
+        </FilterBar>
+      </Panel>
 
       {isLoading ? (
         <TableSkeleton rows={8} cols={5} />
@@ -52,10 +54,10 @@ function PaymentsPage() {
         <EmptyState title="No payments match these filters" />
       ) : (
         <div className="space-y-2">
-          <div className={`overflow-x-auto rounded-md border border-border ${isFetching ? "opacity-60 transition-opacity" : "transition-opacity"}`}>
+          <div className={cn("overflow-x-auto rounded-lg border border-border", isFetching && "opacity-60")}>
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-surface-sunken">
                   <TableHead>Date</TableHead>
                   <TableHead>Work</TableHead>
                   <TableHead>Vendor</TableHead>
