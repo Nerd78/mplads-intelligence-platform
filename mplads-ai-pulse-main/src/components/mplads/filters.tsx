@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { Check, ChevronsUpDown, Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useGeoStates, useStatsOverview } from "@/lib/hooks";
 import { formatAnomalyLabel } from "@/lib/mplads-data";
+import { cn } from "@/lib/utils";
 
 export function FilterBar({ children }: { children: React.ReactNode }) {
   return <div className="flex flex-wrap items-center gap-2">{children}</div>;
@@ -12,23 +15,115 @@ export function FilterBar({ children }: { children: React.ReactNode }) {
 
 const ALL = "__all__";
 
+export type Option = { value: string; label: string; hint?: string };
+
+/**
+ * Combobox for filters whose option list is long enough to need typing.
+ *
+ * A plain Radix Select was unusable for these: 37 states rendered a list that
+ * ran the full height of the viewport (its content uses
+ * `--radix-select-content-available-height`, so it grows to fill the screen)
+ * and offered no way to jump to an entry except scrolling. This caps the list
+ * at ~240px, scrolls inside it, and focuses the search box on open so the
+ * filter can be driven entirely from the keyboard.
+ *
+ * Short, fixed lists (severity, data source) stay on Select — a search box
+ * over four options is friction, not help.
+ */
+export function SearchableSelect({
+  options,
+  value,
+  onChange,
+  allLabel,
+  placeholder,
+  width = "w-[190px]",
+  disabled,
+}: {
+  options: Option[];
+  value?: string | undefined;
+  onChange: (v: string | undefined) => void;
+  allLabel: string;
+  placeholder?: string | undefined;
+  width?: string | undefined;
+  disabled?: boolean | undefined;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          role="combobox"
+          aria-expanded={open}
+          disabled={disabled ?? false}
+          className={cn(
+            "flex h-8 items-center justify-between gap-1 rounded-md border border-border bg-surface px-2.5 text-xs text-ink",
+            "transition-colors hover:border-blue-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200",
+            "disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-ink-subtle",
+            width,
+          )}
+        >
+          <span className={cn("truncate", !selected && "text-ink-subtle")}>{selected ? selected.label : allLabel}</span>
+          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-ink-subtle" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[260px] p-0" align="start">
+        <Command>
+          {/* autoFocus so the list is typeable the moment it opens */}
+          <CommandInput autoFocus placeholder={placeholder ?? "Search…"} className="h-9 text-xs" />
+          <CommandList className="max-h-[240px]">
+            <CommandEmpty className="py-4 text-center text-xs text-ink-muted">No match.</CommandEmpty>
+            <CommandGroup>
+              <CommandItem
+                value={allLabel}
+                onSelect={() => {
+                  onChange(undefined);
+                  setOpen(false);
+                }}
+                className="text-xs"
+              >
+                <Check className={cn("mr-2 h-3.5 w-3.5", value ? "opacity-0" : "opacity-100")} />
+                {allLabel}
+              </CommandItem>
+              {options.map((o) => (
+                <CommandItem
+                  key={o.value}
+                  value={o.label}
+                  onSelect={() => {
+                    onChange(o.value === value ? undefined : o.value);
+                    setOpen(false);
+                  }}
+                  className="text-xs"
+                >
+                  <Check className={cn("mr-2 h-3.5 w-3.5", value === o.value ? "opacity-100" : "opacity-0")} />
+                  <span className="truncate">{o.label}</span>
+                  {o.hint && <span className="ml-auto pl-2 text-[10px] text-ink-subtle tnum">{o.hint}</span>}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function StateSelect({ value, onChange }: { value?: string | undefined; onChange: (v: string | undefined) => void }) {
   const { data } = useGeoStates();
-  const states = [...(data ?? [])].sort((a, b) => a.state.localeCompare(b.state));
+  const options = [...(data ?? [])]
+    .sort((a, b) => a.state.localeCompare(b.state))
+    .map((s) => ({ value: s.state, label: s.state, hint: s.work_count.toLocaleString("en-IN") }));
+
   return (
-    <Select value={value ?? ALL} onValueChange={(v) => onChange(v === ALL ? undefined : v)}>
-      <SelectTrigger className="h-8 w-[180px] text-xs">
-        <SelectValue placeholder="All states" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL}>All states</SelectItem>
-        {states.map((s) => (
-          <SelectItem key={s.state} value={s.state}>
-            {s.state}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <SearchableSelect
+      options={options}
+      value={value}
+      onChange={onChange}
+      allLabel="All states"
+      placeholder="Search states…"
+    />
   );
 }
 
@@ -43,20 +138,16 @@ export function DistrictSelect({
   onChange: (v: string | undefined) => void;
   disabled?: boolean | undefined;
 }) {
+  const options = districts.map((d) => ({ value: d, label: d }));
   return (
-    <Select value={value ?? ALL} onValueChange={(v) => onChange(v === ALL ? undefined : v)} disabled={disabled ?? false}>
-      <SelectTrigger className="h-8 w-[180px] text-xs">
-        <SelectValue placeholder="All districts" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL}>All districts</SelectItem>
-        {districts.map((d) => (
-          <SelectItem key={d} value={d}>
-            {d}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <SearchableSelect
+      options={options}
+      value={value}
+      onChange={onChange}
+      allLabel="All districts"
+      placeholder="Search districts…"
+      disabled={disabled ?? false}
+    />
   );
 }
 
@@ -68,7 +159,7 @@ export function SeveritySelect({ value, onChange }: { value?: string | undefined
       <SelectTrigger className="h-8 w-[150px] text-xs">
         <SelectValue placeholder="All severities" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="max-h-[260px]">
         <SelectItem value={ALL}>All severities</SelectItem>
         {SEVERITIES.map((s) => (
           <SelectItem key={s} value={s}>
@@ -102,19 +193,13 @@ const WORK_CATEGORIES = [
 
 export function CategorySelect({ value, onChange }: { value?: string | undefined; onChange: (v: string | undefined) => void }) {
   return (
-    <Select value={value ?? ALL} onValueChange={(v) => onChange(v === ALL ? undefined : v)}>
-      <SelectTrigger className="h-8 w-[180px] text-xs">
-        <SelectValue placeholder="All categories" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL}>All categories</SelectItem>
-        {WORK_CATEGORIES.map((c) => (
-          <SelectItem key={c} value={c}>
-            {c}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <SearchableSelect
+      options={WORK_CATEGORIES.map((c) => ({ value: c, label: c }))}
+      value={value}
+      onChange={onChange}
+      allLabel="All categories"
+      placeholder="Search categories…"
+    />
   );
 }
 
@@ -126,24 +211,24 @@ export function CategorySelect({ value, onChange }: { value?: string | undefined
  */
 export function AnomalySelect({ value, onChange }: { value?: string | undefined; onChange: (v: string | undefined) => void }) {
   const { data } = useStatsOverview();
-  const flags = Object.entries(data?.anomaly_type_counts ?? {})
+  const options = Object.entries(data?.anomaly_type_counts ?? {})
     .filter(([label]) => label !== "NORMAL")
-    .sort((a, b) => b[1] - a[1]);
+    .sort((a, b) => b[1] - a[1])
+    .map(([code, count]) => ({
+      value: code,
+      label: formatAnomalyLabel(code),
+      hint: count.toLocaleString("en-IN"),
+    }));
 
   return (
-    <Select value={value ?? ALL} onValueChange={(v) => onChange(v === ALL ? undefined : v)}>
-      <SelectTrigger className="h-8 w-[210px] text-xs">
-        <SelectValue placeholder="All anomaly types" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL}>All anomaly types</SelectItem>
-        {flags.map(([code, count]) => (
-          <SelectItem key={code} value={code}>
-            {formatAnomalyLabel(code)} ({count.toLocaleString("en-IN")})
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <SearchableSelect
+      options={options}
+      value={value}
+      onChange={onChange}
+      allLabel="All anomaly types"
+      placeholder="Search anomaly types…"
+      width="w-[210px]"
+    />
   );
 }
 
@@ -153,7 +238,7 @@ export function DataSourceSelect({ value, onChange }: { value?: string | undefin
       <SelectTrigger className="h-8 w-[170px] text-xs">
         <SelectValue placeholder="All sources" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="max-h-[260px]">
         <SelectItem value={ALL}>All sources</SelectItem>
         <SelectItem value="WEB_SCRAPED_REAL">Real · eSAKSHI</SelectItem>
         <SelectItem value="SYNTHETIC_BENCHMARK">Synthetic · Benchmark</SelectItem>
@@ -187,7 +272,7 @@ export function SearchInput({
 
   return (
     <div className="relative">
-      <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+      <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-subtle" />
       <Input
         value={local}
         onChange={(e) => setLocal(e.target.value)}
