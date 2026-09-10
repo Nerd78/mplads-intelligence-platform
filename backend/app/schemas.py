@@ -4,7 +4,7 @@ Kept close to the actual `work`/`payment`/`mp` columns plus the detection
 tables (work_risk_score, work_risk_flag, mp_risk_score) -- see schema.sql.
 Optional[...] is used liberally because real MPLADS data has genuine nulls
 (e.g. ~25% of real works have no sanction_date yet); the frontend is
-expected to render "—"/skeletons for missing values, never fabricate them.
+expected to render "-"/skeletons for missing values, never fabricate them.
 """
 from __future__ import annotations
 

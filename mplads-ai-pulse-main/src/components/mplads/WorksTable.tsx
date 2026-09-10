@@ -163,15 +163,15 @@ export function WorksTable({
                   <div className="truncate text-xs font-medium text-ink" title={w.work_description ?? undefined}>
                     {w.work_description || w.work_id}
                   </div>
-                  <div className="text-[11px] text-ink-subtle">{w.work_category ?? "—"}</div>
+                  <div className="text-[11px] text-ink-subtle">{w.work_category ?? "-"}</div>
                 </TableCell>
-                <TableCell className="max-w-[160px] truncate text-xs text-ink">{w.mp_name ?? "—"}</TableCell>
+                <TableCell className="max-w-[160px] truncate text-xs text-ink">{w.mp_name ?? "-"}</TableCell>
                 <TableCell className="text-xs text-ink">
-                  <div>{w.state ?? "—"}</div>
+                  <div>{w.state ?? "-"}</div>
                   <div className="text-[11px] text-ink-subtle">{formatDistrict(w.district)}</div>
                 </TableCell>
                 <TableCell className="max-w-[170px] text-xs text-ink-muted">
-                  {w.top_flag ? formatAnomalyLabel(w.top_flag) : "—"}
+                  {w.top_flag ? formatAnomalyLabel(w.top_flag) : "-"}
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-right text-xs text-ink tnum">
                   {formatCurrency(w.expenditure)}

@@ -13,7 +13,7 @@ import type { GeoStateAgg } from "@/lib/api";
 import { formatAnomalyLabel, formatNumber } from "@/lib/mplads-data";
 
 export const Route = createFileRoute("/national-intelligence")({
-  head: () => ({ meta: [{ title: "National Intelligence — MPLADS Intelligence" }] }),
+  head: () => ({ meta: [{ title: "National Intelligence - MPLADS Intelligence" }] }),
   component: NationalIntelligence,
 });
 
@@ -176,7 +176,7 @@ function NationalIntelligence() {
                     <TableCell className="text-right text-xs text-ink tnum">{s.critical_count}</TableCell>
                     <TableCell className="text-right text-xs text-ink tnum">{s.high_count}</TableCell>
                     <TableCell className="whitespace-nowrap text-xs text-ink-muted">
-                      {s.top_anomaly_label ? formatAnomalyLabel(s.top_anomaly_label) : "—"}
+                      {s.top_anomaly_label ? formatAnomalyLabel(s.top_anomaly_label) : "-"}
                     </TableCell>
                   </TableRow>
                 ))}

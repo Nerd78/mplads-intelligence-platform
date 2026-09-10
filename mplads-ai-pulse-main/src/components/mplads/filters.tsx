@@ -24,7 +24,7 @@ export type Option = { value: string; label: string; hint?: string };
  * at ~240px, scrolls inside it, and focuses the search box on open so the
  * filter can be driven entirely from the keyboard.
  *
- * Short, fixed lists (severity, data source) stay on Select — a search box
+ * Short, fixed lists (severity, data source) stay on Select - a search box
  * over four options is friction, not help.
  */
 export function SearchableSelect({
@@ -169,7 +169,7 @@ export function SeveritySelect({ value, onChange }: { value?: string | undefined
 /**
  * Categories come from /works/categories, not a hardcoded list. The list used
  * to be pasted in from a one-off query, which meant a re-scrape introducing a
- * new category would silently leave it unfilterable — the option simply would
+ * new category would silently leave it unfilterable - the option simply would
  * not exist. Counts come along for free and are shown as a hint.
  */
 export function CategorySelect({ value, onChange }: { value?: string | undefined; onChange: (v: string | undefined) => void }) {

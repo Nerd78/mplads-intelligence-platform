@@ -242,7 +242,7 @@ export interface StateNameMap {
   polygon_fallback: Record<string, string>;
 }
 
-/** Lok Sabha vs Rajya Sabha rollup — the two are not comparable on totals,
+/** Lok Sabha vs Rajya Sabha rollup - the two are not comparable on totals,
  * so the UI always shows them side by side rather than pooled. */
 export type HouseStats = {
   house: string;

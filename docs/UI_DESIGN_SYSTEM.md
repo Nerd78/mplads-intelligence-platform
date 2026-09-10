@@ -1,7 +1,7 @@
 # UI design system
 
 What the interface is built from, and why each rule exists. Every rule here
-came from a defect that was visible on screen — the reasoning is recorded so
+came from a defect that was visible on screen - the reasoning is recorded so
 the same problem isn't reintroduced later.
 
 Source of truth: [`mplads-ai-pulse-main/src/styles.css`](../mplads-ai-pulse-main/src/styles.css).
@@ -32,7 +32,7 @@ Three solid steps carry depth, so borders can stay light:
 | `--surface-inset` | `#E4ECF7` | chart grid lines, progress tracks |
 
 Cards are pure white on a snow-blue page. That contrast is what makes card
-edges read — not heavy borders.
+edges read - not heavy borders.
 
 ## 3. Blue means magnitude, severity means state
 
@@ -54,12 +54,12 @@ Run through the palette validator rather than eyeballed:
 
 | Check | Result |
 |---|---|
-| Contrast vs surface | **PASS** — all four ≥ 3:1 |
-| Normal-vision separation | **PASS** — worst adjacent pair ΔE 17.0 |
-| CVD separation | **WARN** — worst pair ΔE 7.6 (deutan) |
+| Contrast vs surface | **PASS** - all four ≥ 3:1 |
+| Normal-vision separation | **PASS** - worst adjacent pair ΔE 17.0 |
+| CVD separation | **WARN** - worst pair ΔE 7.6 (deutan) |
 
 The CVD warning is accepted deliberately. Amber and red are close for
-deuteranopes — that is intrinsic to any warm ordered ramp, and several
+deuteranopes - that is intrinsic to any warm ordered ramp, and several
 alternatives were measured before settling. It is legal only because severity
 always ships with a **text label** (`SeverityBadge` renders a dot *and* the
 word), and lightness falls monotonically as severity rises, so the ordering
@@ -85,13 +85,13 @@ page. Use `Panel` + `PanelHeader` + `PanelBody`; use `PageHeader` for the
 route title block.
 
 **All routes are converted.** `@/components/ui/card` is no longer imported by
-any route — if you find yourself reaching for it, use `Panel` instead.
+any route - if you find yourself reaching for it, use `Panel` instead.
 
 ### Who owns the filters
 
 `WorksTable` ships its own toolbar (search, anomaly type, severity, category)
 so any page can drop the table in and get filtering for free. Pages that keep
-their filters in the **URL** — `/works` — pass `searchable={false}` and render
+their filters in the **URL** - `/works` - pass `searchable={false}` and render
 their own `FilterBar` instead. Otherwise the page shows two competing sets of
 the same controls, which is exactly what happened when the table's toolbar was
 first added.
@@ -106,7 +106,7 @@ narrowing inside an already-scoped view (works within one state).
   notation renders ₹1.26e11 as **"₹13KCr"** (thousand-crore), which nobody
   reads as money.
 - **All figures** carry `.tnum` (tabular numerals) so columns align.
-- **Anomaly codes** are mapped to readable names —
+- **Anomaly codes** are mapped to readable names -
   `SANCTION_DELAY_EXCEEDS_90_DAYS` → "Sanction delay > 90 days". The raw codes
   are 30+ characters and wrapped onto three lines as chart axis labels.
 
@@ -121,10 +121,10 @@ shared a baseline. The footnote row renders even when empty to hold the edge.
 
 - **Fabricated districts.** All 3,958 synthetic benchmark works carry
   placeholder district names (`District_5`); no real work does. They are
-  excluded from geographic rankings and render as `—` in tables. They are not
+  excluded from geographic rankings and render as `-` in tables. They are not
   places, and beside real districts they read as real administrative units.
   Synthetic rows still count everywhere else (severity totals, model
-  evaluation) — only *geography* excludes them.
+  evaluation) - only *geography* excludes them.
 - **Lok Sabha vs Rajya Sabha are never pooled.** Lok Sabha: 544 MPs,
   110,343 works, avg risk 23.8. Rajya Sabha: 232 MPs, 1,182 works, avg risk
   **44.0**. A national average is dominated by Lok Sabha volume and hides that
@@ -136,7 +136,7 @@ shared a baseline. The footnote row renders even when empty to hold the edge.
 
 ## 9. Accessibility floor
 
-- Severity is never color-alone — always a labeled badge.
+- Severity is never color-alone - always a labeled badge.
 - Charts with 2+ series carry a legend (`ChartCard`'s `legend` prop).
 - Interactive controls have `aria-label`s; the search input is a real
   `<input type="search">`.

@@ -16,7 +16,7 @@ import type { Loose } from "@/lib/types";
 type Search = Loose<{ state: string; district: string; offset: number }>;
 
 export const Route = createFileRoute("/district-intelligence")({
-  head: () => ({ meta: [{ title: "District Intelligence — MPLADS Intelligence" }] }),
+  head: () => ({ meta: [{ title: "District Intelligence - MPLADS Intelligence" }] }),
   validateSearch: (search: Record<string, unknown>): Search => ({
     state: typeof search["state"] === "string" ? search["state"] : undefined,
     district: typeof search["district"] === "string" ? search["district"] : undefined,

@@ -12,7 +12,7 @@ import { useAlerts, useStatsOverview } from "@/lib/hooks";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/mplads-data";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [{ title: "Command Center — MPLADS Intelligence" }] }),
+  head: () => ({ meta: [{ title: "Command Center - MPLADS Intelligence" }] }),
   component: CommandCenter,
 });
 
@@ -43,7 +43,7 @@ function CommandCenter() {
           icon={Landmark}
           loading={isLoading}
           footnote="funds allocated"
-          explanation="Total sanctioned cost across every loaded work — the funds committed by government for this scope of work."
+          explanation="Total sanctioned cost across every loaded work - the funds committed by government for this scope of work."
         />
         <KpiCard
           label="Spent"
@@ -55,7 +55,7 @@ function CommandCenter() {
         />
         <KpiCard
           label="Utilisation"
-          value={utilisation === null ? "—" : formatPercent(utilisation, 1)}
+          value={utilisation === null ? "-" : formatPercent(utilisation, 1)}
           icon={PiggyBank}
           loading={isLoading}
           footnote="of sanctioned funds spent"
@@ -83,7 +83,7 @@ function CommandCenter() {
         <Panel className="xl:col-span-3">
           <PanelHeader
             title="National risk map"
-            description="Shaded by quintile — select a state to drill into its works."
+            description="Shaded by quintile - select a state to drill into its works."
           />
           <div className="h-[400px] p-3">
             <RiskMap compact onStateClick={(state) => navigate({ to: "/state-intelligence", search: { state } })} />

@@ -26,7 +26,7 @@ type Search = Loose<{
 }>;
 
 export const Route = createFileRoute("/works")({
-  head: () => ({ meta: [{ title: "Works — MPLADS Intelligence" }] }),
+  head: () => ({ meta: [{ title: "Works - MPLADS Intelligence" }] }),
   validateSearch: (search: Record<string, unknown>): Search => ({
     state: typeof search["state"] === "string" ? search["state"] : undefined,
     work_category: typeof search["work_category"] === "string" ? search["work_category"] : undefined,
@@ -60,7 +60,7 @@ function WorksPage() {
       <PageHeader
         eyebrow="Investigations"
         title="Works"
-        description="Full, server-paginated register of every loaded work — filter, sort and search across all 111K+ records."
+        description="Full, server-paginated register of every loaded work - filter, sort and search across all 111K+ records."
       />
 
       {/*

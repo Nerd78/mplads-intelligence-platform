@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MPLADS Intelligence — anomaly detection for MP fund works" },
+      { title: "MPLADS Intelligence - anomaly detection for MP fund works" },
       { name: "description", content: "AI-powered anomaly detection and investigation platform for the MPLADS scheme." },
       { name: "author", content: "MPLADS Intelligence Platform" },
       { name: "theme-color", content: "#2A5FC4" },
@@ -157,7 +157,7 @@ function RootComponent() {
             <footer className="border-t border-border bg-card px-4 py-3">
               <p className="text-center text-xs text-muted-foreground">
                 Rule engine + Isolation Forest detection, validated against a labeled synthetic
-                benchmark — see Model Evaluation for methodology and limitations.
+                benchmark - see Model Evaluation for methodology and limitations.
               </p>
             </footer>
           </div>

@@ -1,4 +1,4 @@
-# Runbook — getting the platform running locally
+# Runbook - getting the platform running locally
 
 End-to-end steps to go from a fresh clone to a populated dashboard, plus the
 things that actually break on the way. Verified on Windows 11, PostgreSQL 18.4,
@@ -8,7 +8,7 @@ Node 22.12, Python 3.13.
 
 | Tool | Version used | Notes |
 |---|---|---|
-| PostgreSQL | 18.4 | PostGIS **not** required — see step 2 |
+| PostgreSQL | 18.4 | PostGIS **not** required - see step 2 |
 | Node | 22.12 | frontend dev server |
 | Python | 3.13 | backend, loader, detection engine |
 
@@ -21,7 +21,7 @@ pip install -r requirements.txt
 ```
 
 Set `DATABASE_URL` in `backend/.env`. **If the password contains reserved URL
-characters, percent-encode them** — an `@` in the password must be written
+characters, percent-encode them** - an `@` in the password must be written
 `%40`, otherwise psycopg2 reads everything before the last `@` as credentials
 and fails with a confusing host error:
 
@@ -40,7 +40,7 @@ psql -U postgres -h localhost -f schema.sql
 `schema.sql` is idempotent, so re-running it is safe.
 
 **PostGIS is not required.** As of REV 5 the schema has no `geom` column, no
-GIST index and no sync trigger — `latitude`/`longitude` stay as plain columns,
+GIST index and no sync trigger - `latitude`/`longitude` stay as plain columns,
 the geo API routes aggregate by state name, and geo-anomaly detection runs in
 the Python layer. Verified on a clean database: all 13 tables create and
 `INSERT INTO work` succeeds with zero triggers present.
@@ -85,7 +85,7 @@ cd backend/detection
 python run_detection.py
 ```
 
-> `detection/db.py` reads `DATABASE_URL` from the **environment only** — it
+> `detection/db.py` reads `DATABASE_URL` from the **environment only** - it
 > never calls `load_dotenv()`, so `backend/.env` is not picked up automatically
 > the way it is for the API. Export the variable first, or pass it inline:
 >
@@ -103,7 +103,7 @@ Takes ~45s for 111k works. Writes `work_risk_score` (111,525),
 
 Severity split on the current dataset (v2): 72,825 Low / 37,382 Medium /
 1,276 High / 42 Critical. 524 works with no financial figures are held out of
-ML scoring and flagged `DATA_QUALITY_INCOMPLETE` — see
+ML scoring and flagged `DATA_QUALITY_INCOMPLETE` - see
 [DETECTION_CHANGELOG.md](DETECTION_CHANGELOG.md) for why.
 
 ## 5. Start the API
@@ -113,7 +113,7 @@ cd backend
 uvicorn app.main:app --reload --port 8000
 ```
 
-`app/db.py` builds its pool lazily, so uvicorn starts even with no database —
+`app/db.py` builds its pool lazily, so uvicorn starts even with no database -
 `/` answers immediately while `/health` and the data routes 500. Use `/health`
 as the real readiness check, not `/`.
 
@@ -142,5 +142,5 @@ curl http://localhost:8000/stats/overview  # total_works: 111525
 ```
 
 The dashboard fetches client-side, so server-rendered HTML shows empty states
-until hydration — "No scored MPs yet" in `curl` output is normal and not a
+until hydration - "No scored MPs yet" in `curl` output is normal and not a
 symptom of a broken database.

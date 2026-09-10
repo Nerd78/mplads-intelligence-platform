@@ -16,7 +16,7 @@ import type { Loose } from "@/lib/types";
 type Search = Loose<{ state: string; offset: number }>;
 
 export const Route = createFileRoute("/state-intelligence")({
-  head: () => ({ meta: [{ title: "State Intelligence — MPLADS Intelligence" }] }),
+  head: () => ({ meta: [{ title: "State Intelligence - MPLADS Intelligence" }] }),
   validateSearch: (search: Record<string, unknown>): Search => ({
     state: typeof search["state"] === "string" ? search["state"] : undefined,
     offset: Number(search["offset"]) || 0,
@@ -61,7 +61,7 @@ function StateIntelligence() {
             <Panel className="lg:col-span-2">
               <PanelHeader
                 title="District ranking"
-                description="Real districts only — synthetic benchmark works carry placeholder names."
+                description="Real districts only - synthetic benchmark works carry placeholder names."
               />
               <div>
                 {isLoading ? (

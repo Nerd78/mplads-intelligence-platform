@@ -1,8 +1,8 @@
-# MPLADS Intelligence Platform — Frontend
+# MPLADS Intelligence Platform - Frontend
 
 TanStack Start + React 19 + shadcn/ui dashboard for the
 [MPLADS Intelligence Platform](../README.md). Talks to the FastAPI backend
-in `../backend/` — it never computes a risk score itself, only displays
+in `../backend/` - it never computes a risk score itself, only displays
 what the detection engine and API return.
 
 ## Pages

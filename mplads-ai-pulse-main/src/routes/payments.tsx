@@ -14,7 +14,7 @@ import type { Loose } from "@/lib/types";
 type Search = Loose<{ work_id: string; vendor_id: string; offset: number }>;
 
 export const Route = createFileRoute("/payments")({
-  head: () => ({ meta: [{ title: "Payments — MPLADS Intelligence" }] }),
+  head: () => ({ meta: [{ title: "Payments - MPLADS Intelligence" }] }),
   validateSearch: (search: Record<string, unknown>): Search => ({
     work_id: typeof search["work_id"] === "string" ? search["work_id"] : undefined,
     vendor_id: typeof search["vendor_id"] === "string" ? search["vendor_id"] : undefined,
@@ -37,7 +37,7 @@ function PaymentsPage() {
       <PageHeader
         eyebrow="Investigations"
         title="Payments"
-        description="Transaction-level payment ledger. Coverage is synthetic-only in this dataset — real works are tracked via their recorded expenditure, not a per-payment ledger."
+        description="Transaction-level payment ledger. Coverage is synthetic-only in this dataset - real works are tracked via their recorded expenditure, not a per-payment ledger."
       />
 
       <Panel className="p-3">
@@ -75,10 +75,10 @@ function PaymentsPage() {
                     <TableCell className="text-xs">{formatDate(p.payment_date)}</TableCell>
                     <TableCell className="max-w-[200px] truncate text-xs">{p.work_id}</TableCell>
                     <TableCell className="text-xs">
-                      {p.vendor_id ?? "—"}
+                      {p.vendor_id ?? "-"}
                       {p.is_vendor_blacklisted && <Ban className="ml-1 inline h-3 w-3 text-sev-critical" />}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{p.payment_type ?? "—"}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{p.payment_type ?? "-"}</TableCell>
                     <TableCell className="text-right text-xs tabular-nums">{formatCurrency(p.payment_amount)}</TableCell>
                   </TableRow>
                 ))}

@@ -156,7 +156,7 @@ def main():
             "work_id": enriched_df.index[incomplete],
             "flag_label": "DATA_QUALITY_INCOMPLETE",
             "source": "rule",
-            "detail": "No sanctioned amount or expenditure recorded — held out of ML scoring",
+            "detail": "No sanctioned amount or expenditure recorded - held out of ML scoring",
         }
     )
     rule_flags = pd.concat([rule_result.flags, dq_flags], ignore_index=True) if len(dq_flags) else rule_result.flags

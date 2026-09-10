@@ -153,7 +153,7 @@ export function AnomalyDistributionChart({
   return (
     <ChartCard
       title="Anomaly signal composition"
-      explanation="Top rule and ML flags across works — one work can carry several."
+      explanation="Top rule and ML flags across works - one work can carry several."
       loading={loading}
       error={error}
       onRetry={onRetry}
@@ -311,7 +311,7 @@ export function RiskTrendChart({
       explanation={
         rows.length > 1
           ? "Composite score across detection runs."
-          : "Only one detection run recorded so far — a trend needs at least two."
+          : "Only one detection run recorded so far - a trend needs at least two."
       }
       loading={loading}
       error={error}

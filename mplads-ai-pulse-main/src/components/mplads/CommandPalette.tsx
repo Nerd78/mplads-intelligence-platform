@@ -88,7 +88,7 @@ export function CommandPalette() {
               <CommandItem key={w.work_id} onSelect={() => go("/project-investigation", { work_id: w.work_id })}>
                 <FileSearch className="mr-2 h-4 w-4" />
                 <span className="truncate">{w.work_description || w.work_id}</span>
-                <span className="ml-auto text-xs text-muted-foreground">{w.severity ?? "—"}</span>
+                <span className="ml-auto text-xs text-muted-foreground">{w.severity ?? "-"}</span>
               </CommandItem>
             ))}
           </CommandGroup>

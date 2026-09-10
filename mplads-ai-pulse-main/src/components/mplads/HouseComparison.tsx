@@ -40,10 +40,10 @@ function HouseCard({ row, isHigherRisk }: { row: HouseStats; isHigherRisk: boole
       </div>
 
       <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
-        <Metric label="Avg risk score" value={row.avg_composite_score === null ? "—" : row.avg_composite_score.toFixed(1)} emphasis />
+        <Metric label="Avg risk score" value={row.avg_composite_score === null ? "-" : row.avg_composite_score.toFixed(1)} emphasis />
         <Metric label="Works scored" value={formatNumber(row.works_scored)} />
         <Metric label="Sanctioned" value={formatCurrency(row.total_sanctioned)} />
-        <Metric label="Utilisation" value={utilisation === null ? "—" : formatPercent(utilisation, 1)} />
+        <Metric label="Utilisation" value={utilisation === null ? "-" : formatPercent(utilisation, 1)} />
         <Metric label="Critical" value={formatNumber(row.critical_count)} />
         <Metric label="High risk" value={formatNumber(row.high_count)} />
       </div>

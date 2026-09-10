@@ -109,7 +109,7 @@ export function AppSidebar() {
         {!collapsed ? (
           <div className="space-y-0.5 text-[11px] text-sidebar-foreground/60">
             <p className="font-medium text-sidebar-foreground/80">Detection Engine</p>
-            <p>Model {overview?.model_version ?? "—"}</p>
+            <p>Model {overview?.model_version ?? "-"}</p>
             <p>Last scored {timeAgo(overview?.last_scored_at)}</p>
           </div>
         ) : (

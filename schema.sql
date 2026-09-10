@@ -1,6 +1,6 @@
 -- ============================================================================
--- MPLADS AI Anomaly Detection — PostgreSQL schema
--- REV 5 — dropped the PostGIS dependency entirely (REV 3/4 required it).
+-- MPLADS AI Anomaly Detection - PostgreSQL schema
+-- REV 5 - dropped the PostGIS dependency entirely (REV 3/4 required it).
 --         `CREATE EXTENSION postgis` fails on any host where the package is
 --         not installed server-side, and that is not fixable from SQL. Worse,
 --         the failure was silent-ish: the `geom` column never got created but
@@ -10,7 +10,7 @@
 --         Nothing in the loader, the API or the detection engine calls a
 --         PostGIS function. `latitude`/`longitude` stay as plain columns, the
 --         geo routes aggregate by state name, and geo-anomaly detection runs
---         in Python/pandas — the same approach schema_sqlite.sql already
+--         in Python/pandas - the same approach schema_sqlite.sql already
 --         took. To add PostGIS back on a host that supports it: re-add
 --         `CREATE EXTENSION postgis`, a `geom GEOGRAPHY(Point, 4326)` column
 --         on `work`, a GIST index over it, and a BEFORE INSERT/UPDATE trigger
@@ -19,53 +19,53 @@
 --         Existing databases built from REV 3 must run
 --         migrations/001_drop_orphan_geom_trigger.sql to clear the trigger.
 --
--- REV 3 — revised against the real master dataset delivered by the team
+-- REV 3 - revised against the real master dataset delivered by the team
 --         (principal_master_works.json / _payments.json / _mp_summary.json,
 --          111,525 / 12,040 / 776 rows, verified 2026-09-09).
 --
 -- What changed vs. REV 2 (the version already committed to the repo) and why
 -- is written up in full in the gap-analysis doc delivered alongside this
 -- file. Short version:
---   * `data_source` (WEB_SCRAPED_REAL / SYNTHETIC_BENCHMARK) added — it did
+--   * `data_source` (WEB_SCRAPED_REAL / SYNTHETIC_BENCHMARK) added - it did
 --     not exist in REV 2 at all, and every downstream query that mixes real
 --     and synthetic rows needs to filter on it.
 --   * The old `status` CHECK constraint listed 5 made-up values. Real data
 --     uses a different, larger vocabulary (e.g. "Work partially Completed",
---     "Pending for Sanction", "NA"), so the CHECK is dropped — status is
+--     "Pending for Sanction", "NA"), so the CHECK is dropped - status is
 --     free TEXT, indexed, documented instead of constrained.
 --   * `work` and `payment` gain every ML feature/benchmark/ground-truth
 --     column the master dataset ships, so the tables can be loaded from it
 --     directly (column-for-column) instead of needing a lossy transform.
 --   * `ground_truth_anomaly` is multi-valued (pipe-delimited, up to 3 labels
---     per row) — modeled as a proper child table, not a single TEXT column,
+--     per row) - modeled as a proper child table, not a single TEXT column,
 --     so "which works are flagged DUPLICATE_WORK" is a plain join/filter
 --     instead of a LIKE/string-split query.
 --   * New `mp_metrics_snapshot` table for the MP-level aggregate/derived
---     columns (composite_risk_score, utilisation_rate_pct, etc.) — these are
+--     columns (composite_risk_score, utilisation_rate_pct, etc.) - these are
 --     a point-in-time computed snapshot from the team's pipeline, not raw
 --     facts, so they get their own table (with computed_at) rather than
 --     living on `mp` itself and silently going stale.
 --   * `vendor` gets canonical `is_blacklisted`/`blacklisted_reason` columns
---     (100% consistent across works.json and payments.json — verified by
+--     (100% consistent across works.json and payments.json - verified by
 --     cross-checking every blacklisted vendor_id in both files) in addition
 --     to the per-row snapshot flags kept on `work`/`payment` for ML fidelity.
---   * The old speculative `dq_missing_*` flags on `work` are dropped — they
+--   * The old speculative `dq_missing_*` flags on `work` are dropped - they
 --     had no defined computation logic and the master dataset's verified
 --     ground-truth columns supersede them.
 --   * `work_latest_status` view no longer treats SUM(payment.amount) as the
---     authoritative "amount paid" for every work — the payments file is
+--     authoritative "amount paid" for every work - the payments file is
 --     100% synthetic (0 real-money rows), so for WEB_SCRAPED_REAL works
 --     `work.expenditure` is the only real figure and is now what the view
 --     uses. The payment-ledger total is kept as a separate, clearly-labeled
 --     column so it isn't mistaken for real disbursement data.
 --
 -- HOW TO RUN: `psql -U postgres -f schema.sql` (creates the `mplads` db if
--- missing, then builds everything inside it). Idempotent — every statement
+-- missing, then builds everything inside it). Idempotent - every statement
 -- uses IF NOT EXISTS / DROP...IF EXISTS / CREATE OR REPLACE, so re-running
 -- after a future revision won't wipe data.
 --
 -- For Adminer or any other plain-SQL runner that doesn't understand \gexec
--- and \c, use schema_adminer.sql instead — same file from CREATE EXTENSION
+-- and \c, use schema_adminer.sql instead - same file from CREATE EXTENSION
 -- onward, with just the two psql-only bootstrap lines removed.
 -- ============================================================================
 
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS source_batch (
 -- the dominant identifier space (111,525 work rows + 12,040 payment rows key
 -- off it with 100% referential match, verified). The legacy "Allocated
 -- Limit" scrape (543 rows) used a different, name+constituency-derived
--- mp_id — those two schemes do NOT produce matching hashes for the same MP
+-- mp_id - those two schemes do NOT produce matching hashes for the same MP
 -- (checked directly, no match under any tried hash/normalization). The
 -- recommended reconciliation (a loader-level job, not a schema concern) is:
 -- treat principal_master_mp_summary.json as authoritative for mp_id, and
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS source_batch (
 -- sno/house_code to the MATCHED row instead of minting a new id.
 CREATE TABLE IF NOT EXISTS mp (
     mp_id           TEXT PRIMARY KEY,     -- master dataset's hashed id where available; see note above
-    sno             INTEGER,              -- legacy Allocated-Limit tile's own "Sno" — row order only, not stable
+    sno             INTEGER,              -- legacy Allocated-Limit tile's own "Sno" - row order only, not stable
     name            TEXT NOT NULL,        -- normalized MP name
     name_raw        TEXT,                 -- MP name exactly as the source gave it, untrimmed
     house_code      TEXT,                 -- legacy raw HOUSE_OF_PARLIAMENT value ("1" or "2"), if known
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS mp (
     tenure_start    DATE,
     tenure_end      DATE,
     allocated_amt   NUMERIC(16,2),        -- legacy Allocated-Limit scrape's entitlement figure
-    entitlement_amt NUMERIC(16,2),        -- master mp_summary's entitlement figure (may differ from allocated_amt —
+    entitlement_amt NUMERIC(16,2),        -- master mp_summary's entitlement figure (may differ from allocated_amt -
                                            -- both kept until the team decides which pipeline is authoritative)
     batch_id        INTEGER REFERENCES source_batch(batch_id)
 );
@@ -136,10 +136,10 @@ CREATE TABLE IF NOT EXISTS agency (
 
 -- Vendor identifiers in the master dataset (contractor_vendor_id in works,
 -- vendor_id in payments) are ALREADY clean, consistent short codes like
--- "Vendor_161" — unlike implementing_agency, they do not need fuzzy entity
+-- "Vendor_161" - unlike implementing_agency, they do not need fuzzy entity
 -- resolution; equality is enough.
 CREATE TABLE IF NOT EXISTS vendor (
-    vendor_id           TEXT PRIMARY KEY,     -- e.g. "Vendor_161" — used as-is from source, no resolution needed
+    vendor_id           TEXT PRIMARY KEY,     -- e.g. "Vendor_161" - used as-is from source, no resolution needed
     name                TEXT,                 -- display name, e.g. "M/s Sunrise Infrastructure (Vendor_161)"
     name_raw            TEXT,
     pan_hash            TEXT,                 -- hashed PAN/registration no. if ever available; never store raw PAN
@@ -173,7 +173,7 @@ CREATE TABLE IF NOT EXISTS work (
     work_description        TEXT,
     work_category           TEXT,
 
-    implementing_agency     TEXT,               -- raw free text, 769 distinct values in current data — needs
+    implementing_agency     TEXT,               -- raw free text, 769 distinct values in current data - needs
                                                  -- fuzzy resolution (see agency_id)
     agency_id               TEXT REFERENCES agency(agency_id),
 
@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS work (
 
     estimated_cost           NUMERIC(16,2),
     sanctioned_amount        NUMERIC(16,2),
-    expenditure              NUMERIC(16,2),      -- authoritative actual spend — see work_latest_status view
+    expenditure              NUMERIC(16,2),      -- authoritative actual spend - see work_latest_status view
     physical_progress_percent  NUMERIC(6,2),
     financial_progress_percent NUMERIC(6,2),
 
@@ -248,7 +248,7 @@ CREATE INDEX IF NOT EXISTS idx_work_synthetic ON work(synthetic_record);
 -- SANCTION_DELAY_EXCEEDS_90_DAYS, EXCESS_PROJECT_DURATION_VS_NATIONAL_AVG,
 -- AWARDED_TO_BLACKLISTED_CONTRACTOR, DUPLICATE_WORK, DELAYED_WORK,
 -- UNUSUAL_EXPENDITURE, COST_OVERRUN, AGENCY_ANOMALY, PROGRESS_MISMATCH,
--- GEOGRAPHIC_ANOMALY) — left as free TEXT rather than an enum since new
+-- GEOGRAPHIC_ANOMALY) - left as free TEXT rather than an enum since new
 -- scenario labels are expected as the synthetic generator evolves.
 CREATE TABLE IF NOT EXISTS work_ground_truth_label (
     work_id     TEXT NOT NULL REFERENCES work(work_id) ON DELETE CASCADE,
@@ -260,7 +260,7 @@ CREATE INDEX IF NOT EXISTS idx_wgtl_label ON work_ground_truth_label(label);
 
 -- ---------------------------------------------------------------------
 -- Payments (many per work). NOTE: as of this dataset, 100% of payment rows
--- are synthetic_record = TRUE — there is currently zero real payment-ledger
+-- are synthetic_record = TRUE - there is currently zero real payment-ledger
 -- data. Do not treat this table as covering real works; work.expenditure is
 -- the only real spend figure available for WEB_SCRAPED_REAL works.
 -- ---------------------------------------------------------------------
@@ -300,7 +300,7 @@ CREATE INDEX IF NOT EXISTS idx_pgtl_label ON payment_ground_truth_label(label);
 -- ---------------------------------------------------------------------
 -- Progress updates (time series per work). Not populated by the current
 -- master dataset (which only carries one physical_progress_percent snapshot
--- per work) — kept for when/if a teammate scrapes historical progress
+-- per work) - kept for when/if a teammate scrapes historical progress
 -- entries from the portal.
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS progress_update (
@@ -316,7 +316,7 @@ CREATE TABLE IF NOT EXISTS progress_update (
 CREATE INDEX IF NOT EXISTS idx_progress_work_date ON progress_update(work_id, update_date);
 
 -- ---------------------------------------------------------------------
--- MP-level aggregate metrics — a point-in-time COMPUTED SNAPSHOT from the
+-- MP-level aggregate metrics - a point-in-time COMPUTED SNAPSHOT from the
 -- team's feature pipeline (principal_master_mp_summary.json), not a raw
 -- fact. Kept separate from `mp` (the identity/reference dimension) so a
 -- refresh/recompute never has to touch the base MP registry, and so a
@@ -362,7 +362,7 @@ CREATE INDEX IF NOT EXISTS idx_mp_metrics_risk ON mp_metrics_snapshot(composite_
 -- ---------------------------------------------------------------------
 -- Convenience view: latest known state of every work. total_paid now comes
 -- from work.expenditure (the only figure that is real for WEB_SCRAPED_REAL
--- rows), NOT from SUM(payment.amount) — the payment ledger is 100%
+-- rows), NOT from SUM(payment.amount) - the payment ledger is 100%
 -- synthetic today, so summing it would silently fabricate "amount paid" for
 -- every real work. total_payment_ledger_amt is kept as a separate, clearly
 -- labeled column so ledger-derived figures are never confused with it.
@@ -405,8 +405,8 @@ LEFT JOIN LATERAL (
 
 -- ============================================================================
 -- Detection-engine output (added when the rule/ML risk-scoring pipeline was
--- built — backend/detection/). Purely additive: no existing table or column
--- above is touched, and none of this is loaded from principal_master_*.json —
+-- built - backend/detection/). Purely additive: no existing table or column
+-- above is touched, and none of this is loaded from principal_master_*.json -
 -- it is COMPUTED by backend/detection/run_detection.py from columns already
 -- in `work`. mp_metrics_snapshot.composite_risk_score (loaded verbatim from
 -- principal_master_mp_summary.json) is a different, source-provided number
@@ -449,7 +449,7 @@ CREATE TABLE IF NOT EXISTS work_risk_flag (
 CREATE INDEX IF NOT EXISTS idx_wrf_label ON work_risk_flag(flag_label);
 
 -- MP-level aggregate of OUR OWN computed work_risk_score rows (kept separate
--- from mp_metrics_snapshot — see header note above). One row per MP, upserted
+-- from mp_metrics_snapshot - see header note above). One row per MP, upserted
 -- on every detection run.
 CREATE TABLE IF NOT EXISTS mp_risk_score (
     mp_id                     TEXT PRIMARY KEY REFERENCES mp(mp_id) ON DELETE CASCADE,

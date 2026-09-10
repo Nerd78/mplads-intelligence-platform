@@ -1,4 +1,4 @@
--- 001 — Remove the orphaned geom trigger left behind by REV 3 of schema.sql.
+-- 001 - Remove the orphaned geom trigger left behind by REV 3 of schema.sql.
 --
 -- ONLY needed for a database built from schema.sql REV 3 or earlier. REV 5
 -- dropped PostGIS entirely, so a database created from the current schema
@@ -7,7 +7,7 @@
 -- REV 3 built work.geom, its GIST index and a trg_work_set_geom trigger
 -- that keeps geom in sync with latitude/longitude. When PostGIS is not
 -- available, `CREATE EXTENSION postgis` fails and the geom column is never
--- created — but the trigger and its function ARE, because they are plain
+-- created - but the trigger and its function ARE, because they are plain
 -- plpgsql and their body is not validated at creation time.
 --
 -- The result is a table that rejects every insert:

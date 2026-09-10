@@ -9,7 +9,7 @@ export type SortState = { key: string; dir: SortDir } | null;
 
 /**
  * Three-state column sort: ascending -> descending -> back to the table's
- * natural order. The third state matters — once a user has sorted, there is
+ * natural order. The third state matters - once a user has sorted, there is
  * otherwise no way back to the ranking the page was built around (here, the
  * server's risk ordering) short of a reload.
  */

@@ -327,7 +327,7 @@ export function RiskMap({
                           <>
                             <p className="font-semibold">{c.points[0].work_category ?? "Work"}</p>
                             <p className="tnum">
-                              {c.points[0].severity ?? "—"} · score {c.points[0].composite_score?.toFixed(0) ?? "—"}
+                              {c.points[0].severity ?? "-"} · score {c.points[0].composite_score?.toFixed(0) ?? "-"}
                             </p>
                             <p className="text-ink-muted">Open case file</p>
                           </>

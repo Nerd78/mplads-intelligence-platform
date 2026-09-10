@@ -4,7 +4,7 @@ import type { Severity } from "@/lib/api";
 
 export function SeverityBadge({ severity, className }: { severity: Severity | null | undefined; className?: string }) {
   if (!severity) {
-    return <span className={cn("text-xs text-muted-foreground", className)}>—</span>;
+    return <span className={cn("text-xs text-muted-foreground", className)}>-</span>;
   }
   return (
     <span

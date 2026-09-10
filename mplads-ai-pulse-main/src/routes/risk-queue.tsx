@@ -16,7 +16,7 @@ import type { Loose } from "@/lib/types";
 type Search = Loose<{ severity: string; state: string; district: string; data_source: string; offset: number }>;
 
 export const Route = createFileRoute("/risk-queue")({
-  head: () => ({ meta: [{ title: "Risk Queue — MPLADS Intelligence" }] }),
+  head: () => ({ meta: [{ title: "Risk Queue - MPLADS Intelligence" }] }),
   validateSearch: (search: Record<string, unknown>): Search => ({
     severity: typeof search["severity"] === "string" ? search["severity"] : undefined,
     state: typeof search["state"] === "string" ? search["state"] : undefined,
@@ -88,7 +88,7 @@ function RiskQueue() {
                     <span className="truncate text-xs font-medium text-ink">
                       {item.work_description || item.work_id}
                     </span>
-                    <span className="hidden truncate text-xs text-ink-muted sm:block">{item.state ?? "—"}</span>
+                    <span className="hidden truncate text-xs text-ink-muted sm:block">{item.state ?? "-"}</span>
                     <span className="hidden whitespace-nowrap text-right text-xs text-ink tnum sm:block">
                       {formatCurrency(item.expenditure)}
                     </span>
@@ -98,7 +98,7 @@ function RiskQueue() {
                   <div className="flex flex-wrap items-center gap-2 pb-3">
                     <DataSourceBadge dataSource={item.data_source} />
                     <span className="text-xs text-muted-foreground">
-                      {item.mp_name ?? "Unknown MP"} · {formatDistrict(item.district)}, {item.state ?? "—"}
+                      {item.mp_name ?? "Unknown MP"} · {formatDistrict(item.district)}, {item.state ?? "-"}
                     </span>
                     <Button
                       size="sm"

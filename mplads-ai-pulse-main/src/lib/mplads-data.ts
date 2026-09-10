@@ -50,7 +50,7 @@ const inr = (n: number, digits: number) =>
  * mixing ₹2 Cr with ₹4.81 L can still be compared at a glance.
  */
 export function formatCurrency(value: number | null | undefined): string {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return "-";
   if (value === 0) return "₹0";
   const abs = Math.abs(value);
   if (abs >= CRORE) return `₹${inr(value / CRORE, abs >= 100 * CRORE ? 0 : 2)} Cr`;
@@ -59,19 +59,19 @@ export function formatCurrency(value: number | null | undefined): string {
 }
 
 export function formatNumber(value: number | null | undefined): string {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return "-";
   return new Intl.NumberFormat("en-IN").format(value);
 }
 
 export function formatPercent(value: number | null | undefined, digits = 0): string {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return "-";
   return `${value.toFixed(digits)}%`;
 }
 
 export function formatDate(value: string | null | undefined): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
@@ -102,16 +102,16 @@ export function formatAnomalyLabel(code: string): string {
 }
 
 /**
- * Synthetic benchmark rows carry fabricated district names ("District_5") —
+ * Synthetic benchmark rows carry fabricated district names ("District_5") -
  * verified: all 3,958 synthetic works use them and no real work does. They
- * are not places, so they render as "—" rather than sitting in a column
+ * are not places, so they render as "-" rather than sitting in a column
  * beside real districts looking like administrative units. The row's source
  * badge already says the record is synthetic.
  */
 const PLACEHOLDER_DISTRICT = /^District_\d+$/;
 
 export function formatDistrict(district: string | null | undefined): string {
-  if (!district || PLACEHOLDER_DISTRICT.test(district)) return "—";
+  if (!district || PLACEHOLDER_DISTRICT.test(district)) return "-";
   return district;
 }
 
@@ -128,9 +128,9 @@ export const DATA_SOURCE_LABEL: Record<DataSource, string> = {
 };
 
 export function timeAgo(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return "—";
+  if (Number.isNaN(then)) return "-";
   const diffMs = Date.now() - then;
   const mins = Math.floor(diffMs / 60_000);
   if (mins < 1) return "just now";

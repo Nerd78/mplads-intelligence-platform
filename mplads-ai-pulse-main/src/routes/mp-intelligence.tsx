@@ -17,7 +17,7 @@ import type { Loose } from "@/lib/types";
 type Search = Loose<{ mp_id: string; q: string }>;
 
 export const Route = createFileRoute("/mp-intelligence")({
-  head: () => ({ meta: [{ title: "MP Intelligence — MPLADS Intelligence" }] }),
+  head: () => ({ meta: [{ title: "MP Intelligence - MPLADS Intelligence" }] }),
   validateSearch: (search: Record<string, unknown>): Search => ({
     mp_id: typeof search["mp_id"] === "string" ? search["mp_id"] : undefined,
     q: typeof search["q"] === "string" ? search["q"] : undefined,
@@ -82,9 +82,9 @@ function MpIntelligence() {
           <Panel>
             <div className="flex flex-wrap items-center justify-between gap-4 p-4">
               <div className="min-w-0">
-                <p className="text-base font-semibold text-ink">{mp?.name ?? "—"}</p>
+                <p className="text-base font-semibold text-ink">{mp?.name ?? "-"}</p>
                 <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-ink-muted">
-                  <span>{mp?.constituency ?? "—"}</span>
+                  <span>{mp?.constituency ?? "-"}</span>
                   <span aria-hidden="true">·</span>
                   <span>{mp?.state}</span>
                   {mp?.house && (
@@ -111,7 +111,7 @@ function MpIntelligence() {
           </div>
 
           <Panel>
-            <PanelHeader title="Project portfolio — highest risk first" />
+            <PanelHeader title="Project portfolio - highest risk first" />
             <div>
               {isLoading ? (
                 <div className="p-4"><TableSkeleton rows={6} cols={6} /></div>
@@ -140,7 +140,7 @@ function MpIntelligence() {
                           <TableCell>
                             <SeverityBadge severity={w.severity} />
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{w.status ?? "—"}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{w.status ?? "-"}</TableCell>
                           <TableCell className="text-right text-xs text-ink tnum">{formatCurrency(w.expenditure)}</TableCell>
                           <TableCell>
                             <DataSourceBadge dataSource={w.data_source} />

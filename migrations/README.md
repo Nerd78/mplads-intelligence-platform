@@ -25,13 +25,13 @@ psql -U postgres -d mplads -f ../../migrations/002_verify_detection_v2.sql
 ```
 
 If `psql` reports `password authentication failed`, remember the connection
-string in `backend/.env` must percent-encode reserved characters — an `@` in
+string in `backend/.env` must percent-encode reserved characters - an `@` in
 the password is written `%40`.
 
 ## Do I need to re-run detection?
 
 Yes, whenever anything under `backend/detection/` changes. The risk tables
-(`work_risk_score`, `work_risk_flag`, `mp_risk_score`) are **derived** — they
+(`work_risk_score`, `work_risk_flag`, `mp_risk_score`) are **derived** - they
 are not migrated, they are regenerated. A schema migration alone will leave
 you serving scores from the previous rule set.
 
@@ -51,10 +51,10 @@ reuse the old model.
 
 `schema.sql` carries its own revision history in the file header.
 
-- **REV 5** — PostGIS dropped entirely. No `geom` column, GIST index or sync
+- **REV 5** - PostGIS dropped entirely. No `geom` column, GIST index or sync
   trigger; `latitude`/`longitude` stay as plain columns and geo-anomaly
   detection runs in Python. A fresh database needs no PostGIS package.
-- **REV 3** — required PostGIS. Where the extension was missing the geom
+- **REV 3** - required PostGIS. Where the extension was missing the geom
   column silently failed to create while its trigger succeeded, leaving a
   `work` table that rejected every insert. `001` clears that.
 

@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * MPLADS Intelligence — design system.
+ * MPLADS Intelligence - design system.
  *
  * Three rules this file exists to enforce:
  *
@@ -26,7 +26,7 @@
  *
  * CHART COLOR: --chart-seq-* is a monotonic-lightness blue ramp for
  * magnitude. Severity uses --sev-* and is ALWAYS paired with a text label
- * (see SeverityBadge) — amber and red are hard to separate for deuteranopes,
+ * (see SeverityBadge) - amber and red are hard to separate for deuteranopes,
  * so color alone never carries the meaning. Verified with the palette
  * validator: contrast >= 3:1 on all four, normal-vision separation dE 17.
  */
@@ -94,7 +94,7 @@
   --color-blue-800: var(--blue-800);
   --color-blue-900: var(--blue-900);
 
-  /* severity — state only, never decoration */
+  /* severity - state only, never decoration */
   --color-sev-low: var(--sev-low);
   --color-sev-low-surface: var(--sev-low-surface);
   --color-sev-medium: var(--sev-medium);

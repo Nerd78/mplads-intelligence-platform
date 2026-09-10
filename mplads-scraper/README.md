@@ -1,4 +1,4 @@
-# MPLADS Scraper — SIH 2026 (PS 26102)
+# MPLADS Scraper - SIH 2026 (PS 26102)
 
 Track A of the MPLADS AI Anomaly Detection project: scrapes the public,
 unauthenticated JSON REST endpoints behind the MPLADS eSAKSHI dashboard
@@ -25,7 +25,7 @@ unauthenticated JSON REST endpoints behind the MPLADS eSAKSHI dashboard
 
 Output JSON is written to `data/`.
 
-## MPLADS fund lifecycle — which tile is which
+## MPLADS fund lifecycle - which tile is which
 
 | stage | tile key | per-row amount field | "who" |
 | --- | --- | --- | --- |
@@ -33,7 +33,7 @@ Output JSON is written to `data/`.
 | **MP allocates fund to works** | **`Works Recommended`** | **`RECOMMENDED_AMOUNT`** (+ `SANCTION_AMOUNT`) | one row per work, has `MP_NAME` |
 | district sanctions | `Works Sanctioned` | `SANCTION_AMOUNT` | per work |
 | work finished | `Works Completed` | `ACTUAL_AMOUNT` | per work |
-| money paid out | `Expenditure on Completed and On-going Works as on Date` | — | aggregate |
+| money paid out | `Expenditure on Completed and On-going Works as on Date` | - | aggregate |
 
 "Funds a given MP allocated" = sum of `RECOMMENDED_AMOUNT` over that MP's
 `Works Recommended` rows. Divide by their `ALLOCATED_AMT` for utilisation.
@@ -61,11 +61,11 @@ utilisation_pct).
 
 Verified 2026-09-09: `--recommendations` merged **107,567** work rows
 (headline tile says 107,571) totalling **₹5,767 Cr recommended** vs
-**₹8,334 Cr entitlement** (69.2% utilisation) — both totals match the
+**₹8,334 Cr entitlement** (69.2% utilisation) - both totals match the
 dashboard's own headline tile numbers (₹5,766.82 Cr / ₹8,333.67 Cr), so the
 per-MP breakdown is sound. 538 of 543 MPs have recommended at least one work.
 
-## Test status — VERIFIED LIVE 2026-09-09
+## Test status - VERIFIED LIVE 2026-09-09
 
 Run end-to-end against the live site from this machine:
 
@@ -76,7 +76,7 @@ Run end-to-end against the live site from this machine:
 - `--report "Works Completed"`: **34,906 work-level rows in a single call**,
   ~27 MB, ~14 s, no connection reset. Row fields include `WORK_ID`,
   `ACTUAL_AMOUNT`, `ACTUAL_END_DATE`, `WORK_CATEGORY`, `MP_NAME`,
-  `STATE_NAME`, `CONSTITUENCY`, `FLAG`, `AVERAGE_RATING` — this is the
+  `STATE_NAME`, `CONSTITUENCY`, `FLAG`, `AVERAGE_RATING` - this is the
   work-level detail the ML layer needs.
 
 ### What was wrong before
@@ -90,7 +90,7 @@ the dashboard's own JS uses is `…/rest/PreLoginDashboardData/*` (no
 
 ## Endpoint reference (observed 2026-09-09)
 
-Base: `https://mplads.mospi.gov.in/rest/PreLoginDashboardData/` — all POST.
+Base: `https://mplads.mospi.gov.in/rest/PreLoginDashboardData/` - all POST.
 `combo` = `<stateId>,<constId>,<mpId>,<house>`, unset field = `0`,
 house `2` = Lok Sabha, `1` = Rajya Sabha. Dashboard default = `0,0,0,2`.
 
@@ -98,31 +98,31 @@ house `2` = Lok Sabha, `1` = Rajya Sabha. Dashboard default = `0,0,0,2`.
 | --- | --- |
 | `getStateData` | `{}` |
 | `getTenureData` | `{"uname": "0,0,0,2"}` |
-| `getTilesData` | `{"uname": "0,0,0,2"}` — its keys are the tile keys |
+| `getTilesData` | `{"uname": "0,0,0,2"}` - its keys are the tile keys |
 | `getConstituencyData` | `{"id": <STATE_ID>}` |
 | `getMpNamesData` | `{"state_combo": "<stId>,<house>,<tenure>"}` |
 | `getMpAndConstCombo` | `{"const_combo": "<coId>,<house>,<tenure>"}` |
 | `getPieChartLabels` | `""` (literal empty body) |
 | `getgraphdata` | `"0,0,0,2"` (raw string body, not JSON) |
-| `getTilesReportData` | `{"combo": "0,0,0,2", "key": "<tileKey>"}` — value is a **JSON-encoded string**, decode twice (the script does this) |
+| `getTilesReportData` | `{"combo": "0,0,0,2", "key": "<tileKey>"}` - value is a **JSON-encoded string**, decode twice (the script does this) |
 
 Individual work evidence (photos / sanction-order docs) lives under a
 second namespace, not yet wired into the CLI:
 
-- `/rest/PreLoginCitizenWorkRcmdRest/getAttachmentById` — `{"id": <attId>}`
-- `/rest/PreLoginCitizenWorkRcmdRest/getReviewDetailsByWork` — `{"json": <workId>}`
-- `/rest/PreLoginDashboardData/getAttachIdsbyFlag` — `{"json": ...}`
+- `/rest/PreLoginCitizenWorkRcmdRest/getAttachmentById` - `{"id": <attId>}`
+- `/rest/PreLoginCitizenWorkRcmdRest/getReviewDetailsByWork` - `{"json": <workId>}`
+- `/rest/PreLoginDashboardData/getAttachIdsbyFlag` - `{"json": ...}`
 
 ## Known caveats
 
 - The big work-level tiles ("Works Recommended" ~108k, "Works Sanctioned"
   ~80k, "Works Completed" ~35k) return as one large JSON blob. It worked in
   a single shot here, but the backend has reset connections under rapid
-  repeated polling before — the script uses a 120 s timeout plus
+  repeated polling before - the script uses a 120 s timeout plus
   retry/backoff; still, don't poll these in a tight loop. Server-side
   DataTables paging (`draw`/`start`/`length`) was NOT needed and is not
   implemented.
-- Re-verify endpoint behaviour and robots.txt/terms close to build time —
+- Re-verify endpoint behaviour and robots.txt/terms close to build time -
   this was reverse-engineered on one date and government portals change
   without notice.
 

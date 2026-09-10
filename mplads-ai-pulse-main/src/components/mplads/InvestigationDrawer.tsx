@@ -43,7 +43,7 @@ export function InvestigationDrawer({
               </div>
               <SheetTitle className="text-base leading-snug">{work.work_description || work.work_id}</SheetTitle>
               <p className="text-xs text-muted-foreground">
-                {work.work_id} · {work.mp_name ?? "Unknown MP"} · {formatDistrict(work.district)}, {work.state ?? "—"}
+                {work.work_id} · {work.mp_name ?? "Unknown MP"} · {formatDistrict(work.district)}, {work.state ?? "-"}
               </p>
               <Button
                 size="sm"
@@ -59,7 +59,7 @@ export function InvestigationDrawer({
             <section className="space-y-2">
               <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Risk score</h4>
               <div className="flex items-end gap-3">
-                <span className="text-3xl font-semibold tabular-nums">{work.risk ? Math.round(work.risk.composite_score) : "—"}</span>
+                <span className="text-3xl font-semibold tabular-nums">{work.risk ? Math.round(work.risk.composite_score) : "-"}</span>
                 <span className="pb-1 text-xs text-muted-foreground">/ 100 composite</span>
               </div>
               {work.risk && (
@@ -125,7 +125,7 @@ export function InvestigationDrawer({
                 <div>
                   <dt className="text-muted-foreground">Utilisation</dt>
                   <dd className="font-medium tabular-nums">
-                    {work.sanctioned_amount ? formatPercent(((work.expenditure ?? 0) / work.sanctioned_amount) * 100) : "—"}
+                    {work.sanctioned_amount ? formatPercent(((work.expenditure ?? 0) / work.sanctioned_amount) * 100) : "-"}
                   </dd>
                 </div>
               </dl>
@@ -157,10 +157,10 @@ export function InvestigationDrawer({
               <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contractor</h4>
               <div className="text-xs">
                 <p className="font-medium text-foreground">{work.contractor_name ?? "Not recorded"}</p>
-                <p className="text-muted-foreground">{work.contractor_vendor_id ?? "—"}</p>
+                <p className="text-muted-foreground">{work.contractor_vendor_id ?? "-"}</p>
                 {work.is_contractor_blacklisted && (
                   <p className="mt-1 flex items-center gap-1 text-sev-critical">
-                    <Ban className="h-3 w-3" /> Blacklisted{work.blacklisted_reason ? ` — ${work.blacklisted_reason}` : ""}
+                    <Ban className="h-3 w-3" /> Blacklisted{work.blacklisted_reason ? ` - ${work.blacklisted_reason}` : ""}
                   </p>
                 )}
               </div>

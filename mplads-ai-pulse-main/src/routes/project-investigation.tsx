@@ -16,7 +16,7 @@ import type { Loose } from "@/lib/types";
 type Search = Loose<{ work_id: string }>;
 
 export const Route = createFileRoute("/project-investigation")({
-  head: () => ({ meta: [{ title: "Case File — MPLADS Intelligence" }] }),
+  head: () => ({ meta: [{ title: "Case File - MPLADS Intelligence" }] }),
   validateSearch: (search: Record<string, unknown>): Search => ({
     work_id: typeof search["work_id"] === "string" ? search["work_id"] : undefined,
   }),
@@ -59,11 +59,11 @@ function ProjectInvestigation() {
           </div>
           <h2 className="max-w-2xl text-lg font-semibold leading-snug text-ink">{work.work_description || "Untitled work"}</h2>
           <p className="text-sm text-ink-muted">
-            {work.mp_name ?? "Unknown MP"} · {work.constituency ?? "—"} · {formatDistrict(work.district)}, {work.state ?? "—"}
+            {work.mp_name ?? "Unknown MP"} · {work.constituency ?? "-"} · {formatDistrict(work.district)}, {work.state ?? "-"}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-3xl font-semibold tnum">{work.risk ? Math.round(work.risk.composite_score) : "—"}</p>
+          <p className="text-3xl font-semibold tnum">{work.risk ? Math.round(work.risk.composite_score) : "-"}</p>
           <p className="text-xs text-ink-muted">composite risk / 100</p>
         </div>
       </div>
@@ -98,8 +98,8 @@ function ProjectInvestigation() {
 
       {/* 3. Evidence */}
       <Panel>
-        <PanelHeader title="Evidence — why this was flagged"
-          description="A signal, not a finding of fraud — each item is an independently checkable rule or statistical outlier." />
+        <PanelHeader title="Evidence - why this was flagged"
+          description="A signal, not a finding of fraud - each item is an independently checkable rule or statistical outlier." />
         <PanelBody>
           {work.flags.length === 0 ? (
             <p className="text-xs text-ink-muted">No rule or ML-outlier signals fired for this work.</p>
@@ -154,7 +154,7 @@ function ProjectInvestigation() {
             <div>
               <p className="text-ink-muted">Utilisation</p>
               <p className="font-medium tnum">
-                {work.sanctioned_amount ? formatPercent(((work.expenditure ?? 0) / work.sanctioned_amount) * 100) : "—"}
+                {work.sanctioned_amount ? formatPercent(((work.expenditure ?? 0) / work.sanctioned_amount) * 100) : "-"}
               </p>
             </div>
             {work.cost_overrun_percent !== null && (
@@ -192,11 +192,11 @@ function ProjectInvestigation() {
           <PanelHeader title={<span className="flex items-center gap-1.5"><Building2 className="h-4 w-4" /> Contractor</span>} />
           <PanelBody className="space-y-1 text-xs">
             <p className="font-medium text-ink">{work.contractor_name ?? "Not recorded"}</p>
-            <p className="text-ink-muted">Vendor ID: {work.contractor_vendor_id ?? "—"}</p>
-            <p className="text-ink-muted">Implementing agency: {work.implementing_agency ?? "—"}</p>
+            <p className="text-ink-muted">Vendor ID: {work.contractor_vendor_id ?? "-"}</p>
+            <p className="text-ink-muted">Implementing agency: {work.implementing_agency ?? "-"}</p>
             {work.is_contractor_blacklisted && (
               <p className="flex items-center gap-1 pt-1 text-sev-critical">
-                <Ban className="h-3 w-3" /> Blacklisted{work.blacklisted_reason ? ` — ${work.blacklisted_reason}` : ""}
+                <Ban className="h-3 w-3" /> Blacklisted{work.blacklisted_reason ? ` - ${work.blacklisted_reason}` : ""}
               </p>
             )}
           </PanelBody>
@@ -224,9 +224,9 @@ function ProjectInvestigation() {
                   <TableRow key={p.payment_id}>
                     <TableCell className="text-xs">{formatDate(p.payment_date)}</TableCell>
                     <TableCell className="text-xs">
-                      {p.vendor_id ?? "—"} {p.is_vendor_blacklisted && <Ban className="ml-1 inline h-3 w-3 text-sev-critical" />}
+                      {p.vendor_id ?? "-"} {p.is_vendor_blacklisted && <Ban className="ml-1 inline h-3 w-3 text-sev-critical" />}
                     </TableCell>
-                    <TableCell className="text-xs text-ink-muted">{p.payment_type ?? "—"}</TableCell>
+                    <TableCell className="text-xs text-ink-muted">{p.payment_type ?? "-"}</TableCell>
                     <TableCell className="text-right text-xs tnum">{formatCurrency(p.payment_amount)}</TableCell>
                   </TableRow>
                 ))}
@@ -242,10 +242,10 @@ function ProjectInvestigation() {
         <PanelBody className="text-xs text-ink-muted">
           {work.latitude && work.longitude ? (
             <p>
-              {work.latitude.toFixed(4)}, {work.longitude.toFixed(4)} · {work.block ?? "—"}, {work.village_or_ward ?? "—"}
+              {work.latitude.toFixed(4)}, {work.longitude.toFixed(4)} · {work.block ?? "-"}, {work.village_or_ward ?? "-"}
             </p>
           ) : (
-            <p>No coordinates recorded for this work — {work.data_source === "WEB_SCRAPED_REAL" ? "real scraped works do not carry coordinates in this dataset" : "not geo-tagged"}.</p>
+            <p>No coordinates recorded for this work - {work.data_source === "WEB_SCRAPED_REAL" ? "real scraped works do not carry coordinates in this dataset" : "not geo-tagged"}.</p>
           )}
         </PanelBody>
       </Panel>
