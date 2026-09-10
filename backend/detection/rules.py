@@ -95,9 +95,23 @@ def rule_cost_overrun(df: pd.DataFrame) -> pd.Series:
 
 
 def rule_progress_mismatch(df: pd.DataFrame) -> pd.Series:
-    mask = df["progress_mismatch_gap"] > 20
+    """Money spent ahead of work delivered.
+
+    Uses the SIGNED gap, not the source `progress_mismatch_gap` column: that
+    column is an absolute difference (verified on all 111,525 rows), so
+    thresholding it fired on both directions at once. Of the 582 works it
+    flagged, only 58 had financial actually ahead of physical -- the other
+    524 were the opposite case (work delivered, payment not yet recorded),
+    which is not this anomaly and was being reported with a message that
+    asserted the reverse of what the data said.
+
+    Direction matters here: paying ahead of delivery is the fraud pattern;
+    delivering ahead of payment is usually an unpaid contractor or lagging
+    paperwork.
+    """
+    mask = df["progress_gap_financial_minus_physical"] > 20
     hit = df.loc[mask]
-    return hit["progress_mismatch_gap"].map(
+    return hit["progress_gap_financial_minus_physical"].map(
         lambda g: f"Financial progress leads physical progress by {g:.1f} points (> 20)"
     )
 

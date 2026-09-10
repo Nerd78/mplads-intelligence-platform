@@ -91,6 +91,7 @@ const ANOMALY_LABELS: Record<string, string> = {
   DELAYED_WORK: "Delayed work",
   UNUSUAL_EXPENDITURE: "Unusual expenditure",
   GEOGRAPHIC_ANOMALY: "Geographic anomaly",
+  DATA_QUALITY_INCOMPLETE: "Incomplete record",
 };
 
 export function formatAnomalyLabel(code: string): string {
